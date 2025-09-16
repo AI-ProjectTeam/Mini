@@ -24,7 +24,7 @@ import { checkServerStatus } from './services/api';
 
 const AppContainer = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #FFF8DC 0%, #F0E68C 100%);
 `;
 
 const MainContent = styled.main`

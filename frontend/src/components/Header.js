@@ -32,13 +32,13 @@ const Logo = styled(Link)`
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #667eea;
+  color: #8B4513;
   font-size: 24px;
   font-weight: 700;
   margin-right: auto;
   
   &:hover {
-    color: #764ba2;
+    color: #CD853F;
   }
 `;
 
@@ -70,7 +70,7 @@ const Nav = styled.nav`
 
 const NavLink = styled(Link)`
   text-decoration: none;
-  color: #333;
+  color: #8B4513;
   font-weight: 500;
   font-size: 16px;
   padding: 8px 16px;
@@ -79,13 +79,13 @@ const NavLink = styled(Link)`
   position: relative;
   
   ${props => props.active && `
-    color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
+    color: #CD853F;
+    background: rgba(205, 133, 63, 0.1);
   `}
   
   &:hover {
-    color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
+    color: #CD853F;
+    background: rgba(205, 133, 63, 0.1);
     transform: translateY(-1px);
   }
   
@@ -96,7 +96,7 @@ const NavLink = styled(Link)`
     left: 50%;
     width: 0;
     height: 2px;
-    background: #667eea;
+    background: #CD853F;
     transition: all 0.3s ease;
     transform: translateX(-50%);
   }
@@ -113,7 +113,7 @@ const MobileMenuButton = styled.button`
   background: none;
   border: none;
   font-size: 24px;
-  color: #667eea;
+  color: #8B4513;
   cursor: pointer;
   padding: 8px;
   
@@ -152,7 +152,7 @@ function Header() {
       {/* 로고 */}
       <Logo to="/" onClick={handleNavLinkClick}>
         <LogoIcon />
-        곤충 캐릭터 변환기
+        LittlePet
       </Logo>
 
       {/* 데스크톱 네비게이션 */}

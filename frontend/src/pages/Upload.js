@@ -1,20 +1,17 @@
 /**
  * 업로드 페이지 컴포넌트
- * 이미지 업로드 및 AI 처리 요청을 담당
+ * Figma 디자인에 맞춘 심플한 업로드 인터페이스
  * 
  * 주요 기능:
- * 1. 드래그 앤 드롭 이미지 업로드
- * 2. 파일 선택 업로드
- * 3. 이미지 미리보기
- * 4. AI 처리 옵션 선택
- * 5. 처리 진행 상태 표시
+ * 1. 곤충 친구 사진 올리기 (이미지 업로드)
+ * 2. 내 곤충 친구의 정보를 알려줘~ (분류하기)
  */
 
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import styled from 'styled-components';
-import { FaUpload, FaImage, FaTimes, FaBug, FaMagic, FaRocket } from 'react-icons/fa';
+import { FaUpload, FaSearch, FaImage, FaTimes } from 'react-icons/fa';
 
 import { 
   validateImageFile, 
@@ -26,104 +23,171 @@ import {
 } from '../services/api';
 
 const UploadContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 40px 24px;
-  max-width: 800px;
-  margin: 0 auto;
+  background: linear-gradient(135deg, #FFF8DC 0%, #F0E68C 100%);
 `;
 
-const Title = styled.h1`
-  text-align: center;
-  font-size: 36px;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 16px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-`;
-
-const Subtitle = styled.p`
-  text-align: center;
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 40px;
-`;
-
-const UploadCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 40px;
-  margin-bottom: 32px;
-`;
-
-const DropZone = styled.div`
-  border: 3px dashed ${props => props.isDragActive ? '#4CAF50' : 'rgba(255, 255, 255, 0.3)'};
-  border-radius: 16px;
-  padding: 60px 40px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: ${props => props.isDragActive ? 'rgba(76, 175, 80, 0.1)' : 'transparent'};
+const MainContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  max-width: 1000px;
+  width: 100%;
   
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.05);
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 40px;
   }
 `;
 
-const DropZoneIcon = styled(FaUpload)`
-  font-size: 48px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 24px;
+const LeftSection = styled.div`
+  flex: 1;
+  text-align: left;
+  
+  @media (max-width: 768px) {
+    text-align: center;
+  }
 `;
 
-const DropZoneText = styled.p`
+const GuideText = styled.p`
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #8B4513;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  font-weight: 500;
+  
+  @media (max-width: 768px) {
+    font-size: 16px;
+    margin-bottom: 30px;
+  }
+`;
+
+const RightSection = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const ImageUploadArea = styled.div`
+  width: 350px;
+  height: 280px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 3px dashed ${props => props.isDragActive ? '#4CAF50' : '#8B4513'};
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 40px;
+  
+  &:hover {
+    border-color: #CD853F;
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  @media (max-width: 768px) {
+    width: 300px;
+    height: 240px;
+  }
+  
+  @media (max-width: 480px) {
+    width: 280px;
+    height: 220px;
+  }
+`;
+
+const UploadIcon = styled(FaUpload)`
+  font-size: 48px;
+  color: #8B4513;
   margin-bottom: 16px;
+  opacity: 0.7;
+`;
+
+const UploadText = styled.p`
+  font-size: 16px;
+  color: #8B4513;
+  text-align: center;
   font-weight: 500;
 `;
 
-const DropZoneSubtext = styled.p`
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 20px;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
 `;
 
-const PreviewSection = styled.div`
-  margin-top: 32px;
+const ActionButton = styled.button`
+  padding: 16px 32px;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 14px 24px;
+    font-size: 15px;
+  }
 `;
 
-const PreviewCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 24px;
-  position: relative;
+const UploadButton = styled(ActionButton)`
+  background: linear-gradient(45deg, #CD853F, #D2691E);
+  color: white;
+  box-shadow: 0 4px 15px rgba(205, 133, 63, 0.4);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(205, 133, 63, 0.6);
+  }
+`;
+
+const ClassifyButton = styled(ActionButton)`
+  background: linear-gradient(45deg, #228B22, #32CD32);
+  color: white;
+  box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 139, 34, 0.6);
+  }
 `;
 
 const PreviewImage = styled.img`
   width: 100%;
-  max-height: 400px;
-  object-fit: contain;
-  border-radius: 12px;
-  margin-bottom: 16px;
-`;
-
-const ImageInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
 `;
 
 const RemoveButton = styled.button`
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 32px;
-  height: 32px;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(244, 67, 54, 0.8);
   color: white;
@@ -133,6 +197,7 @@ const RemoveButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  font-size: 12px;
   
   &:hover {
     background: rgba(244, 67, 54, 1);
@@ -140,79 +205,12 @@ const RemoveButton = styled.button`
   }
 `;
 
-const ProcessingOptions = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin: 32px 0;
-`;
-
-const OptionButton = styled.button`
-  padding: 20px 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  background: ${props => props.selected ? 'rgba(255, 255, 255, 0.2)' : 'transparent'};
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.6);
-    background: rgba(255, 255, 255, 0.1);
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const OptionIcon = styled.div`
-  font-size: 32px;
-`;
-
-const OptionTitle = styled.div`
-  font-weight: 600;
-  font-size: 16px;
-`;
-
-const OptionDescription = styled.div`
-  font-size: 12px;
-  opacity: 0.8;
+const StatusText = styled.p`
   text-align: center;
-`;
-
-const ProcessButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(45deg, #4CAF50, #45a049);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-  }
-  
-  &:disabled {
-    background: rgba(255, 255, 255, 0.3);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
+  font-size: 14px;
+  color: #8B4513;
+  margin-top: 20px;
+  font-weight: 500;
 `;
 
 const LoadingOverlay = styled.div`
@@ -257,24 +255,12 @@ const LoadingSubtext = styled.p`
   text-align: center;
 `;
 
-const ErrorMessage = styled.div`
-  background: rgba(244, 67, 54, 0.1);
-  border: 1px solid rgba(244, 67, 54, 0.3);
-  border-radius: 12px;
-  padding: 16px;
-  color: #ffcdd2;
-  margin-top: 16px;
-  text-align: center;
-`;
-
 function Upload({ serverConnected }) {
   const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [processingOption, setProcessingOption] = useState('full'); // 'classify', 'character', 'full'
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [error, setError] = useState('');
 
   /**
    * 드래그 앤 드롭 핸들러
@@ -298,12 +284,10 @@ function Upload({ serverConnected }) {
    * 파일 선택 처리
    */
   const handleFileSelect = (file) => {
-    setError('');
-    
     // 파일 유효성 검사
     const validation = validateImageFile(file);
     if (!validation.valid) {
-      setError(validation.message);
+      alert(validation.message);
       return;
     }
 
@@ -326,173 +310,110 @@ function Upload({ serverConnected }) {
     }
     setSelectedFile(null);
     setPreviewUrl(null);
-    setError('');
   };
 
   /**
-   * AI 처리 실행
+   * 파일 업로드 버튼 클릭
    */
-  const handleProcess = async () => {
-    if (!selectedFile || !serverConnected) {
-      setError('파일을 선택하고 서버 연결을 확인해주세요.');
+  const handleUploadClick = () => {
+    document.querySelector('input[type="file"]').click();
+  };
+
+  /**
+   * 분류하기 처리
+   */
+  const handleClassify = async () => {
+    if (!selectedFile) {
+      alert('먼저 곤충 사진을 업로드해주세요.');
+      return;
+    }
+
+    if (!serverConnected) {
+      alert('서버에 연결되지 않았습니다. 백엔드 서버를 먼저 실행해주세요.');
       return;
     }
 
     setLoading(true);
-    setError('');
+    setLoadingMessage('곤충 친구의 정보를 분석중입니다...');
 
     try {
-      let result;
-      
-      switch (processingOption) {
-        case 'classify':
-          setLoadingMessage('곤충 분류 중...');
-          result = await classifyInsect(selectedFile);
-          break;
-        case 'character':
-          setLoadingMessage('캐릭터 생성 중...');
-          result = await generateCharacter(selectedFile);
-          break;
-        case 'full':
-        default:
-          setLoadingMessage('AI 분석 및 캐릭터 생성 중...');
-          result = await processFullPipeline(selectedFile);
-          break;
-      }
+      // 전체 파이프라인 처리 (분류 + 캐릭터 생성)
+      const result = await processFullPipeline(selectedFile);
 
       // 결과 페이지로 이동
       navigate('/result', { 
         state: { 
           result: result.data,
           originalFile: selectedFile,
-          processingOption 
+          processingOption: 'full'
         } 
       });
 
     } catch (error) {
       console.error('처리 중 오류:', error);
-      setError(error.message || '처리 중 오류가 발생했습니다.');
+      alert(error.message || '처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
       setLoadingMessage('');
     }
   };
 
-  /**
-   * 파일 크기를 읽기 쉬운 형태로 변환
-   */
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
   return (
     <UploadContainer>
-      <Title>이미지 업로드</Title>
-      <Subtitle>곤충 사진을 업로드하여 AI 분석을 시작하세요</Subtitle>
+      <MainContent>
+        <LeftSection>
+          <GuideText>
+            내가 올리는 곤충<br />
+            사진을 구경하고<br />
+            정리해 준 친구들<br />
+            건설
+          </GuideText>
+        </LeftSection>
 
-      <UploadCard>
-        {!selectedFile ? (
-          <DropZone {...getRootProps()} isDragActive={isDragActive}>
+        <RightSection>
+          <ImageUploadArea {...getRootProps()} isDragActive={isDragActive}>
             <input {...getInputProps()} />
-            <DropZoneIcon />
-            <DropZoneText>
-              {isDragActive 
-                ? '이곳에 파일을 놓아주세요' 
-                : '이미지를 드래그하거나 클릭하여 업로드'}
-            </DropZoneText>
-            <DropZoneSubtext>
-              JPG, PNG, BMP, GIF 파일 지원 (최대 10MB)
-            </DropZoneSubtext>
-          </DropZone>
-        ) : (
-          <PreviewSection>
-            <PreviewCard>
-              <RemoveButton onClick={handleRemoveFile}>
-                <FaTimes />
-              </RemoveButton>
-              <PreviewImage src={previewUrl} alt="업로드된 이미지" />
-              <ImageInfo>
-                <span>
-                  <FaImage style={{ marginRight: '8px' }} />
-                  {selectedFile.name}
-                </span>
-                <span>{formatFileSize(selectedFile.size)}</span>
-              </ImageInfo>
-            </PreviewCard>
-          </PreviewSection>
-        )}
+            {selectedFile ? (
+              <>
+                <RemoveButton onClick={handleRemoveFile}>
+                  <FaTimes />
+                </RemoveButton>
+                <PreviewImage src={previewUrl} alt="업로드된 이미지" />
+              </>
+            ) : (
+              <>
+                <UploadIcon />
+                <UploadText>
+                  {isDragActive 
+                    ? '이곳에 파일을 놓아주세요' 
+                    : '곤충 사진을 드래그하거나 클릭해주세요'}
+                </UploadText>
+              </>
+            )}
+          </ImageUploadArea>
 
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-      </UploadCard>
-
-      {selectedFile && (
-        <>
-          <UploadCard>
-            <Title style={{ fontSize: '24px', marginBottom: '24px' }}>
-              처리 옵션 선택
-            </Title>
+          <ButtonContainer>
+            <UploadButton onClick={handleUploadClick} disabled={loading}>
+              <FaUpload />
+              곤충 친구 사진 올리기
+            </UploadButton>
             
-            <ProcessingOptions>
-              <OptionButton
-                selected={processingOption === 'classify'}
-                onClick={() => setProcessingOption('classify')}
-                disabled={!serverConnected}
-              >
-                <OptionIcon><FaBug /></OptionIcon>
-                <OptionTitle>곤충 분류만</OptionTitle>
-                <OptionDescription>곤충 종류만 분류합니다</OptionDescription>
-              </OptionButton>
-
-              <OptionButton
-                selected={processingOption === 'character'}
-                onClick={() => setProcessingOption('character')}
-                disabled={!serverConnected}
-              >
-                <OptionIcon><FaMagic /></OptionIcon>
-                <OptionTitle>캐릭터 생성만</OptionTitle>
-                <OptionDescription>캐릭터만 생성합니다</OptionDescription>
-              </OptionButton>
-
-              <OptionButton
-                selected={processingOption === 'full'}
-                onClick={() => setProcessingOption('full')}
-                disabled={!serverConnected}
-              >
-                <OptionIcon><FaRocket /></OptionIcon>
-                <OptionTitle>전체 처리</OptionTitle>
-                <OptionDescription>분류 + 캐릭터 생성</OptionDescription>
-              </OptionButton>
-            </ProcessingOptions>
-
-            <ProcessButton
-              onClick={handleProcess}
+            <ClassifyButton 
+              onClick={handleClassify} 
               disabled={!selectedFile || !serverConnected || loading}
             >
-              {loading ? (
-                <>
-                  <div className="loading" />
-                  처리 중...
-                </>
-              ) : (
-                <>
-                  <FaRocket />
-                  AI 처리 시작
-                </>
-              )}
-            </ProcessButton>
+              <FaSearch />
+              내 곤충 친구의 정보를 알려줘~
+            </ClassifyButton>
+          </ButtonContainer>
 
-            {!serverConnected && (
-              <ErrorMessage>
-                서버에 연결되지 않았습니다. 백엔드 서버를 먼저 실행해주세요.
-              </ErrorMessage>
-            )}
-          </UploadCard>
-        </>
-      )}
+          {!serverConnected && (
+            <StatusText>
+              ⚠️ 서버 연결을 확인해주세요
+            </StatusText>
+          )}
+        </RightSection>
+      </MainContent>
 
       {loading && (
         <LoadingOverlay>
