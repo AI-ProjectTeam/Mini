@@ -1,0 +1,198 @@
+/**
+ * 헤더 네비게이션 컴포넌트
+ * 
+ * 주요 기능:
+ * 1. 사이트 로고 및 제목
+ * 2. 네비게이션 메뉴
+ * 3. 반응형 모바일 메뉴
+ */
+
+import React, { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import styled from 'styled-components';
+import { FaBug, FaBars, FaTimes } from 'react-icons/fa';
+
+const HeaderContainer = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 1000;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+`;
+
+const Logo = styled(Link)`
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: #667eea;
+  font-size: 24px;
+  font-weight: 700;
+  margin-right: auto;
+  
+  &:hover {
+    color: #764ba2;
+  }
+`;
+
+const LogoIcon = styled(FaBug)`
+  margin-right: 12px;
+  font-size: 28px;
+`;
+
+const Nav = styled.nav`
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 80px;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    flex-direction: column;
+    padding: 24px;
+    gap: 24px;
+    transform: translateY(${props => props.isOpen ? '0' : '-100%'});
+    transition: transform 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+`;
+
+const NavLink = styled(Link)`
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+  
+  ${props => props.active && `
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+  `}
+  
+  &:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #667eea;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+  }
+  
+  ${props => props.active && `
+    &::after {
+      width: 80%;
+    }
+  `}
+`;
+
+const MobileMenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #667eea;
+  cursor: pointer;
+  padding: 8px;
+  
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  /**
+   * 모바일 메뉴 토글
+   */
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  /**
+   * 네비게이션 링크 클릭 시 모바일 메뉴 닫기
+   */
+  const handleNavLinkClick = () => {
+    setMobileMenuOpen(false);
+  };
+
+  /**
+   * 현재 경로가 활성 상태인지 확인
+   */
+  const isActiveRoute = (path) => {
+    return location.pathname === path;
+  };
+
+  return (
+    <HeaderContainer>
+      {/* 로고 */}
+      <Logo to="/" onClick={handleNavLinkClick}>
+        <LogoIcon />
+        곤충 캐릭터 변환기
+      </Logo>
+
+      {/* 데스크톱 네비게이션 */}
+      <Nav isOpen={mobileMenuOpen}>
+        <NavLink 
+          to="/" 
+          active={isActiveRoute('/')}
+          onClick={handleNavLinkClick}
+        >
+          홈
+        </NavLink>
+        <NavLink 
+          to="/upload" 
+          active={isActiveRoute('/upload')}
+          onClick={handleNavLinkClick}
+        >
+          이미지 업로드
+        </NavLink>
+        <NavLink 
+          to="/result" 
+          active={isActiveRoute('/result')}
+          onClick={handleNavLinkClick}
+        >
+          결과 보기
+        </NavLink>
+        <NavLink 
+          to="/about" 
+          active={isActiveRoute('/about')}
+          onClick={handleNavLinkClick}
+        >
+          프로젝트 소개
+        </NavLink>
+      </Nav>
+
+      {/* 모바일 메뉴 버튼 */}
+      <MobileMenuButton onClick={toggleMobileMenu}>
+        {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </MobileMenuButton>
+    </HeaderContainer>
+  );
+}
+
+export default Header;
