@@ -11,6 +11,8 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaBug, FaBars, FaTimes } from 'react-icons/fa';
+import Lottie from 'lottie-react';
+import beeAnimation from '../assets/mini-main.json';
 
 const HeaderContainer = styled.header`
   position: fixed;
@@ -45,6 +47,97 @@ const Logo = styled(Link)`
 const LogoIcon = styled(FaBug)`
   margin-right: 12px;
   font-size: 28px;
+`;
+
+const BeeContainer = styled.div`
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  animation: flyBee 17s infinite ease-in-out;
+  z-index: 5;
+  pointer-events: none; /* 클릭 방지 */
+  
+  @keyframes flyBee {
+    0% {
+      left: -70px;
+      top: 15px;
+      transform: scale(0.7) rotateY(0deg);
+    }
+    10% {
+      left: 15%;
+      top: 25px;
+      transform: scale(0.9) rotateY(0deg);
+    }
+    25% {
+      left: 30%;
+      top: 10px;
+      transform: scale(1) rotateY(-10deg);
+    }
+    40% {
+      left: 50%;
+      top: 30px;
+      transform: scale(0.8) rotateY(5deg);
+    }
+    60% {
+      left: 70%;
+      top: 8px;
+      transform: scale(1.1) rotateY(-5deg);
+    }
+    75% {
+      left: 85%;
+      top: 22px;
+      transform: scale(0.9) rotateY(0deg);
+    }
+    90% {
+      left: 95%;
+      top: 15px;
+      transform: scale(0.7) rotateY(0deg);
+    }
+    100% {
+      left: calc(100% + 70px);
+      top: 20px;
+      transform: scale(0.7) rotateY(0deg);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    width: 35px;
+    height: 35px;
+    animation: flyBeeMobile 14s infinite ease-in-out;
+    
+    @keyframes flyBeeMobile {
+      0% {
+        left: -50px;
+        top: 12px;
+        transform: scale(0.5) rotateY(0deg);
+      }
+      25% {
+        left: 25%;
+        top: 8px;
+        transform: scale(0.7) rotateY(-10deg);
+      }
+      50% {
+        left: 50%;
+        top: 18px;
+        transform: scale(0.6) rotateY(5deg);
+      }
+      75% {
+        left: 75%;
+        top: 5px;
+        transform: scale(0.8) rotateY(-5deg);
+      }
+      100% {
+        left: calc(100% + 50px);
+        top: 12px;
+        transform: scale(0.5) rotateY(0deg);
+      }
+    }
+  }
+`;
+
+const BeeAnimation = styled(Lottie)`
+  width: 100%;
+  height: 100%;
 `;
 
 const Nav = styled.nav`
@@ -149,6 +242,15 @@ function Header() {
 
   return (
     <HeaderContainer>
+      {/* 꿀벌 애니메이션 */}
+      <BeeContainer>
+        <BeeAnimation 
+          animationData={beeAnimation}
+          loop={true}
+          autoplay={true}
+        />
+      </BeeContainer>
+
       {/* 로고 */}
       <Logo to="/" onClick={handleNavLinkClick}>
         <LogoIcon />
