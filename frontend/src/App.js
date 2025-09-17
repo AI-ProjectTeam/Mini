@@ -18,6 +18,7 @@ import Home from './pages/Home';
 import Upload from './pages/Upload';
 import Result from './pages/Result';
 import About from './pages/About';
+import CharacterGeneration from './pages/CharacterGeneration';
 
 // API 서비스
 import { checkServerStatus } from './services/api';
@@ -123,6 +124,9 @@ function App() {
             
             {/* 결과 페이지 - 분류 결과 및 캐릭터 표시 */}
             <Route path="/result" element={<Result />} />
+            
+            {/* 캐릭터 생성 페이지 - AI 이미지 생성 */}
+            <Route path="/character-generation" element={<CharacterGeneration />} />
             
             {/* 소개 페이지 - 프로젝트 정보 */}
             <Route path="/about" element={<About />} />

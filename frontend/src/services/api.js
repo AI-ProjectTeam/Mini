@@ -352,6 +352,26 @@ export const validateImageFile = (file) => {
 };
 
 /**
+ * AI 캐릭터 이미지 생성
+ * @param {Object} characterData - 캐릭터 생성 데이터
+ * @returns {Promise<Object>} 생성된 캐릭터 이미지 정보
+ */
+export const generateCharacterImage = async (characterData) => {
+  try {
+    const response = await api.post('/generate-character-image', characterData, {
+      timeout: 120000, // AI 이미지 생성은 시간이 오래 걸릴 수 있음 (2분)
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`캐릭터 이미지 생성 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
  * 이미지 미리보기 URL 생성
  * @param {File} file - 이미지 파일
  * @returns {string} 미리보기 URL
