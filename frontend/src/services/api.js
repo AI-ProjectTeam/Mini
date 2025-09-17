@@ -194,6 +194,112 @@ export const processFullPipeline = async (file) => {
 };
 
 /**
+ * 제미나이 AI를 사용한 어린이용 상세 곤충 분류
+ * @param {File} file - 분류할 곤충 이미지 파일
+ * @returns {Promise<Object>} 상세 분류 결과
+ */
+export const classifyInsectDetailed = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post('/classify-insect-detailed', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 45000, // 제미나이 AI는 더 긴 처리 시간 필요
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`상세 분류 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
+ * 제미나이 AI를 사용한 간단한 곤충 분류 (파싱된 데이터만)
+ * @param {File} file - 분류할 곤충 이미지 파일
+ * @returns {Promise<Object>} 파싱된 분류 결과
+ */
+export const classifyInsectSimple = async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post('/classify-insect-simple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      timeout: 45000, // 제미나이 AI는 더 긴 처리 시간 필요
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`간단 분류 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
+ * Gemini API 키 설정
+ * @param {string} apiKey - Gemini API 키
+ * @returns {Promise<Object>} 설정 결과
+ */
+export const setGeminiApiKey = async (apiKey) => {
+  try {
+    const response = await api.post('/set-api-key', {
+      api_key: apiKey
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`API 키 설정 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
+ * Gemini API 키 해제
+ * @returns {Promise<Object>} 해제 결과
+ */
+export const removeGeminiApiKey = async () => {
+  try {
+    const response = await api.delete('/api-key');
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`API 키 해제 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
+ * AI 모델 상태 확인
+ * @returns {Promise<Object>} 모델 상태 정보
+ */
+export const getModelStatus = async () => {
+  try {
+    const response = await api.get('/model-status');
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`모델 상태 확인 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
  * 파일 유효성 검사
  * @param {File} file - 검사할 파일
  * @returns {Object} 유효성 검사 결과

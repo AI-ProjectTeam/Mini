@@ -329,13 +329,12 @@ async def classify_insect_detailed(file: UploadFile = File(...)):
         result = insect_classifier.classify_insect_for_kids(bytes(file_content), file.filename)
         
         if "success" in result and result["success"]:
+            # 파싱된 데이터를 직접 반환 (프론트엔드에서 바로 사용할 수 있도록)
+            parsed_data = result.get("parsed_data", {})
             return JSONResponse(content={
                 "success": True,
-                "data": {
-                    "classification": result["classification"],
-                    "parsed_data": result.get("parsed_data", {}),
-                    "filename": result["filename"]
-                },
+                "data": parsed_data,  # 프론트엔드에서 바로 사용할 수 있도록 파싱된 데이터만 반환
+                "filename": result["filename"],
                 "timestamp": datetime.now().isoformat()
             })
         else:
@@ -417,9 +416,11 @@ async def classify_insect_simple(file: UploadFile = File(...)):
         result = insect_classifier.classify_insect_for_kids(bytes(file_content), file.filename)
         
         if "success" in result and result["success"]:
+            # 파싱된 데이터를 직접 반환 (프론트엔드에서 바로 사용할 수 있도록)
+            parsed_data = result.get("parsed_data", {})
             return JSONResponse(content={
                 "success": True,
-                "data": result.get("parsed_data", {}),
+                "data": parsed_data,  # 프론트엔드에서 바로 사용할 수 있도록 파싱된 데이터만 반환
                 "filename": result["filename"],
                 "timestamp": datetime.now().isoformat()
             })

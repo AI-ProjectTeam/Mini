@@ -11,7 +11,8 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDropzone } from 'react-dropzone';
 import styled from 'styled-components';
-import { FaUpload, FaSearch, FaImage, FaTimes } from 'react-icons/fa';
+import { FaUpload, FaSearch, FaImage, FaTimes, FaKey } from 'react-icons/fa';
+import ApiKeyModal from '../components/ApiKeyModal';
 
 import { 
   validateImageFile, 
@@ -19,7 +20,8 @@ import {
   revokeImagePreviewUrl,
   classifyInsect,
   generateCharacter,
-  processFullPipeline
+  processFullPipeline,
+  classifyInsectSimple
 } from '../services/api';
 
 const UploadContainer = styled.div`
@@ -261,6 +263,7 @@ function Upload({ serverConnected }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   /**
    * 드래그 앤 드롭 핸들러
@@ -313,6 +316,17 @@ function Upload({ serverConnected }) {
   };
 
   /**
+   * API 키 설정 성공 후 처리
+   */
+  const handleApiKeySuccess = () => {
+    setShowApiKeyModal(false);
+    // API 키 설정 후 자동으로 분류 재시도
+    if (selectedFile) {
+      handleClassify();
+    }
+  };
+
+  /**
    * 파일 업로드 버튼 클릭
    */
   const handleUploadClick = () => {
@@ -337,21 +351,27 @@ function Upload({ serverConnected }) {
     setLoadingMessage('곤충 친구의 정보를 분석중입니다...');
 
     try {
-      // 전체 파이프라인 처리 (분류 + 캐릭터 생성)
-      const result = await processFullPipeline(selectedFile);
+      // 제미나이 AI를 사용한 상세 곤충 분류
+      const result = await classifyInsectSimple(selectedFile);
 
       // 결과 페이지로 이동
       navigate('/result', { 
         state: { 
           result: result.data,
           originalFile: selectedFile,
-          processingOption: 'full'
+          processingOption: 'gemini'
         } 
       });
 
     } catch (error) {
       console.error('처리 중 오류:', error);
-      alert(error.message || '처리 중 오류가 발생했습니다.');
+      
+      // API 키 관련 오류인 경우 모달 표시
+      if (error.message.includes('API 키가 설정되지 않았습니다')) {
+        setShowApiKeyModal(true);
+      } else {
+        alert(error.message || '처리 중 오류가 발생했습니다.');
+      }
     } finally {
       setLoading(false);
       setLoadingMessage('');
@@ -363,10 +383,7 @@ function Upload({ serverConnected }) {
       <MainContent>
         <LeftSection>
           <GuideText>
-            내가 올리는 곤충<br />
-            사진을 구경하고<br />
-            정리해 준 친구들<br />
-            건설
+           애기들을 위한 후후후
           </GuideText>
         </LeftSection>
 
@@ -407,6 +424,37 @@ function Upload({ serverConnected }) {
             </ClassifyButton>
           </ButtonContainer>
 
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <button
+              onClick={() => setShowApiKeyModal(true)}
+              style={{
+                background: 'none',
+                border: '1px solid #8B4513',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                color: '#8B4513',
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                margin: '0 auto',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#8B4513';
+                e.target.style.color = 'white';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = 'none';
+                e.target.style.color = '#8B4513';
+              }}
+            >
+              <FaKey />
+              API 키 설정
+            </button>
+          </div>
+
           {!serverConnected && (
             <StatusText>
               ⚠️ 서버 연결을 확인해주세요
@@ -422,6 +470,12 @@ function Upload({ serverConnected }) {
           <LoadingSubtext>잠시만 기다려주세요...</LoadingSubtext>
         </LoadingOverlay>
       )}
+
+      <ApiKeyModal
+        isOpen={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        onSuccess={handleApiKeySuccess}
+      />
     </UploadContainer>
   );
 }

@@ -35,7 +35,7 @@ const Title = styled.h1`
   text-align: center;
   font-size: 36px;
   font-weight: 700;
-  color: white;
+  color: #003300;
   margin-bottom: 16px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 `;
@@ -43,7 +43,7 @@ const Title = styled.h1`
 const Subtitle = styled.p`
   text-align: center;
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
+  color: #003300;
   margin-bottom: 40px;
 `;
 
@@ -60,7 +60,7 @@ const ResultGrid = styled.div`
 `;
 
 const ResultCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
+  background: #ffffff;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
@@ -68,10 +68,118 @@ const ResultCard = styled.div`
   text-align: center;
 `;
 
+const NotebookCard = styled.div`
+  background: #ffffff;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  text-align: center;
+`;
+
+const NotebookCardHeader = styled.div`
+  background: #f8f9fa;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e9ecef;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+`;
+
+const NotebookCardBinding = styled.div`
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(45deg, #2c3e50, #34495e);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+  }
+`;
+
+const NotebookCardTitle = styled.h2`
+  font-size: 24px;
+  font-weight: 600;
+  color: #003300;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const NotebookCardContent = styled.div`
+  padding: 24px;
+  background: repeating-linear-gradient(
+    transparent,
+    transparent 19px,
+    #f0f0f0 20px
+  );
+  min-height: 200px;
+`;
+
+const InfoSection = styled.div`
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #fffacd;
+  border-radius: 8px;
+  border-left: 4px solid #ffd700;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: rotate(-1deg);
+  position: relative;
+  
+  &:nth-child(even) {
+    transform: rotate(1deg);
+    background: #f0f8ff;
+    border-left-color: #87ceeb;
+  }
+  
+  &:nth-child(3n) {
+    transform: rotate(0.5deg);
+    background: #f5f5dc;
+    border-left-color: #daa520;
+  }
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+`;
+
+const InfoSectionTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #003300;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+`;
+
+const InfoSectionText = styled.p`
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #003300;
+  font-weight: 400;
+  text-align: left;
+`;
+
 const CardTitle = styled.h2`
   font-size: 24px;
   font-weight: 600;
-  color: white;
+  color: #003300;
   margin-bottom: 24px;
   display: flex;
   align-items: center;
@@ -81,16 +189,20 @@ const CardTitle = styled.h2`
 
 const ImageContainer = styled.div`
   width: 100%;
-  max-width: 300px;
+  height: 200px;
   margin: 0 auto 24px;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const ResultImage = styled.img`
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
 `;
 
@@ -119,7 +231,7 @@ const MainResultTitle = styled.h3`
 
 const MainResultText = styled.p`
   font-size: 18px;
-  color: white;
+  color: #003300;
   font-weight: 500;
 `;
 
@@ -145,13 +257,19 @@ const OtherResults = styled.div`
 
 const OtherResultItem = styled.div`
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border-radius: 8px;
   margin-bottom: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #003300;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  gap: 12px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const CharacterInfo = styled.div`
@@ -165,7 +283,7 @@ const InfoItem = styled.div`
   gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
+  color: #003300;
   
   &:last-child {
     border-bottom: none;
@@ -190,42 +308,54 @@ const ActionButtons = styled.div`
 `;
 
 const ActionButton = styled.button`
-  padding: 16px 24px;
+  padding: 16px 32px;
   border: none;
-  border-radius: 12px;
+  border-radius: 50px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-family: 'Noto Sans KR', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   
-  &.primary {
-    background: linear-gradient(45deg, #667eea, #764ba2);
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-    }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   
-  &.secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    
-    &:hover {
-      background: rgba(255, 255, 255, 0.2);
-    }
+  @media (max-width: 480px) {
+    padding: 14px 24px;
+    font-size: 15px;
+  }
+`;
+
+const PrimaryButton = styled(ActionButton)`
+  background: linear-gradient(45deg, #CD853F, #D2691E);
+  color: white;
+  box-shadow: 0 4px 15px rgba(205, 133, 63, 0.4);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(205, 133, 63, 0.6);
+  }
+`;
+
+const SecondaryButton = styled(ActionButton)`
+  background: linear-gradient(45deg, #228B22, #32CD32);
+  color: white;
+  box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 139, 34, 0.6);
   }
 `;
 
 const StatsSection = styled.div`
-  background: rgba(255, 255, 255, 0.1);
+  background: #ffffff;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
@@ -243,7 +373,7 @@ const StatsGrid = styled.div`
 const StatItem = styled.div`
   text-align: center;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   border-radius: 12px;
 `;
 
@@ -256,13 +386,14 @@ const StatValue = styled.div`
 
 const StatLabel = styled.div`
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #003300;
 `;
+
 
 const NoResultMessage = styled.div`
   text-align: center;
   padding: 60px 40px;
-  color: rgba(255, 255, 255, 0.8);
+  color: #003300;
 `;
 
 const NoResultIcon = styled.div`
@@ -279,6 +410,9 @@ function Result() {
   const result = location.state?.result;
   const originalFile = location.state?.originalFile;
   const processingOption = location.state?.processingOption;
+
+  // 실제 API 응답 데이터 사용
+  const displayResult = result || {};
 
   useEffect(() => {
     // 원본 이미지 URL 생성
@@ -298,7 +432,6 @@ function Result() {
     return (
       <ResultContainer>
         <NoResultMessage>
-          <NoResultIcon>🤔</NoResultIcon>
           <Title style={{ fontSize: '28px' }}>결과를 찾을 수 없습니다</Title>
           <p>처리 결과가 없습니다. 다시 이미지를 업로드해주세요.</p>
           <Link to="/upload" style={{ textDecoration: 'none', marginTop: '24px', display: 'inline-block' }}>
@@ -355,14 +488,14 @@ function Result() {
   return (
     <ResultContainer>
       <Title>처리 결과</Title>
-      <Subtitle>AI 분석이 완료되었습니다! 🎉</Subtitle>
+      <Subtitle>AI 분석이 완료되었습니다!</Subtitle>
 
       <ResultGrid>
         {/* 원본 이미지 */}
         <ResultCard>
           <CardTitle>
             <FaBug />
-            원본 이미지
+            내 친구 정보
           </CardTitle>
           {originalImageUrl && (
             <ImageContainer>
@@ -376,28 +509,30 @@ function Result() {
               <MainResult>
                 <MainResultTitle>
                   <FaCheckCircle />
-                  분류 결과
+                  분석 결과
                 </MainResultTitle>
                 <MainResultText>{result.classification.predicted_class}</MainResultText>
                 <ConfidenceBar>
                   <ConfidenceFill confidence={result.classification.confidence} />
                 </ConfidenceBar>
-                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', marginTop: '8px' }}>
+                <p style={{ color: '#003300', fontSize: '14px', marginTop: '8px' }}>
                   신뢰도: {(result.classification.confidence * 100).toFixed(1)}%
                 </p>
               </MainResult>
 
-              {result.classification.all_predictions && (
+              {displayResult.곤충_이름 && (
                 <OtherResults>
-                  <h4 style={{ color: 'rgba(255,255,255,0.9)', marginBottom: '12px' }}>
-                    다른 가능성:
+                  <h4 style={{ color: '#003300', marginBottom: '12px' }}>
+                    곤충 정보:
                   </h4>
-                  {result.classification.all_predictions.slice(1, 4).map((pred, index) => (
-                    <OtherResultItem key={index}>
-                      <span>{pred.class}</span>
-                      <span>{(pred.confidence * 100).toFixed(1)}%</span>
-                    </OtherResultItem>
-                  ))}
+                  <OtherResultItem>
+                    <span style={{ fontWeight: '600', minWidth: '50px' }}>이름:</span>
+                    <span style={{ textAlign: 'left' }}>{displayResult.곤충_이름}</span>
+                  </OtherResultItem>
+                  <OtherResultItem>
+                    <span style={{ fontWeight: '600', minWidth: '50px' }}>종류:</span>
+                    <span style={{ fontSize: '13px', lineHeight: '1.4', textAlign: 'left' }}>{displayResult.곤충_종류}</span>
+                  </OtherResultItem>
                 </OtherResults>
               )}
             </ClassificationResults>
@@ -406,87 +541,79 @@ function Result() {
 
         {/* 생성된 캐릭터 */}
         {result.character && (
-          <ResultCard>
-            <CardTitle>
-              <FaMagic />
-              생성된 캐릭터
-            </CardTitle>
-            {result.character.character_image_path && (
-              <ImageContainer>
-                <ResultImage 
-                  src={`http://localhost:8000/${result.character.character_image_path}`} 
-                  alt="생성된 캐릭터" 
-                />
-              </ImageContainer>
-            )}
+          <NotebookCard>
+            <NotebookCardHeader>
+              <NotebookCardBinding></NotebookCardBinding>
+              <NotebookCardTitle>
+                <FaMagic />
+                내 친구에 대해 더 알아봐요
+              </NotebookCardTitle>
+            </NotebookCardHeader>
             
-            <CharacterInfo>
-              <InfoItem>
-                <InfoIcon><FaPalette /></InfoIcon>
-                <InfoText>스타일: {result.character.style_applied}</InfoText>
-              </InfoItem>
-              <InfoItem>
-                <InfoIcon><FaClock /></InfoIcon>
-                <InfoText>생성 시간: {result.character.generation_time}</InfoText>
-              </InfoItem>
-              <InfoItem>
-                <InfoIcon><FaMagic /></InfoIcon>
-                <InfoText>모델: {result.character.model_version}</InfoText>
-              </InfoItem>
-            </CharacterInfo>
-
-            {result.character.character_description && (
-              <div style={{ 
-                marginTop: '20px', 
-                padding: '16px', 
-                background: 'rgba(255,255,255,0.05)', 
-                borderRadius: '8px',
-                color: 'rgba(255,255,255,0.8)',
-                fontSize: '14px',
-                lineHeight: '1.5'
-              }}>
-                {result.character.character_description}
-              </div>
-            )}
-          </ResultCard>
+            <NotebookCardContent>
+              {displayResult.특별한_모습 && (
+                <InfoSection>
+                  <InfoSectionTitle>🔍 특별한 모습</InfoSectionTitle>
+                  <InfoSectionText>{displayResult.특별한_모습}</InfoSectionText>
+                </InfoSection>
+              )}
+              
+              {displayResult.서식지 && (
+                <InfoSection>
+                  <InfoSectionTitle>🏞️ 서식지</InfoSectionTitle>
+                  <InfoSectionText>{displayResult.서식지}</InfoSectionText>
+                </InfoSection>
+              )}
+              
+              {displayResult.먹이 && (
+                <InfoSection>
+                  <InfoSectionTitle>🍽️ 먹이</InfoSectionTitle>
+                  <InfoSectionText>{displayResult.먹이}</InfoSectionText>
+                </InfoSection>
+              )}
+              
+              {displayResult.재미있는_점 && (
+                <InfoSection>
+                  <InfoSectionTitle>✨ 재미있는 점</InfoSectionTitle>
+                  <InfoSectionText>{displayResult.재미있는_점}</InfoSectionText>
+                </InfoSection>
+              )}
+              
+              {displayResult.친구_되는_법 && (
+                <InfoSection>
+                  <InfoSectionTitle>🤝 친구되는 법</InfoSectionTitle>
+                  <InfoSectionText>{displayResult.친구_되는_법}</InfoSectionText>
+                </InfoSection>
+              )}
+              
+              {/* 데이터가 없을 때 안내 메시지 */}
+              {!displayResult.곤충_이름 && (
+                <InfoSection>
+                  <InfoSectionTitle>🤔 분석 중...</InfoSectionTitle>
+                  <InfoSectionText>곤충 정보를 분석하고 있습니다. 잠시만 기다려주세요!</InfoSectionText>
+                </InfoSection>
+              )}
+            </NotebookCardContent>
+          </NotebookCard>
         )}
       </ResultGrid>
 
-      {/* 통계 정보 */}
-      <StatsSection>
-        <CardTitle style={{ marginBottom: '0' }}>
-          <FaCheckCircle />
-          처리 통계
-        </CardTitle>
-        <StatsGrid>
-          {result.classification && (
-            <StatItem>
-              <StatValue>{(result.classification.confidence * 100).toFixed(1)}%</StatValue>
-              <StatLabel>분류 정확도</StatLabel>
-            </StatItem>
-          )}
-          {result.processing_time && (
-            <StatItem>
-              <StatValue>{result.processing_time}</StatValue>
-              <StatLabel>처리 시간</StatLabel>
-            </StatItem>
-          )}
-          <StatItem>
-            <StatValue>{processingOption === 'full' ? '전체' : processingOption === 'classify' ? '분류' : '캐릭터'}</StatValue>
-            <StatLabel>처리 모드</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>성공</StatValue>
-            <StatLabel>처리 상태</StatLabel>
-          </StatItem>
-        </StatsGrid>
-      </StatsSection>
+ 
 
       {/* 액션 버튼들 */}
       <ActionButtons>
+        <SecondaryButton onClick={() => navigate('/')}>
+          <FaHome />
+          홈
+        </SecondaryButton>
+        
+        <SecondaryButton onClick={() => navigate('/upload')}>
+          <FaUpload />
+          새로 업로드
+        </SecondaryButton>
+        
         {result.character?.character_image_path && (
-          <ActionButton 
-            className="primary"
+          <PrimaryButton 
             onClick={() => handleDownload(
               `http://localhost:8000/${result.character.character_image_path}`,
               'character.png'
@@ -494,23 +621,8 @@ function Result() {
           >
             <FaDownload />
             캐릭터 다운로드
-          </ActionButton>
+          </PrimaryButton>
         )}
-        
-        <ActionButton className="secondary" onClick={handleShare}>
-          <FaShare />
-          결과 공유
-        </ActionButton>
-        
-        <ActionButton className="secondary" onClick={() => navigate('/upload')}>
-          <FaUpload />
-          새로 업로드
-        </ActionButton>
-        
-        <ActionButton className="secondary" onClick={() => navigate('/')}>
-          <FaHome />
-          홈으로
-        </ActionButton>
       </ActionButtons>
     </ResultContainer>
   );
