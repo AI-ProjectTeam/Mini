@@ -861,22 +861,22 @@ function Upload({ serverConnected }) {
       
       <MainContent>
         <LeftSection>
-          <WelcomeTitle>🌟 곤충 친구들을 만나볼까요? 🌟</WelcomeTitle>
+          <WelcomeTitle>곤충 친구들을 만나볼까요?</WelcomeTitle>
           <GuideText>
             사진을 올려주면 어떤 곤충 친구인지 알려드릴게요!<br/>
-            그리고 귀여운 캐릭터로도 변신시켜 드려요 ✨
+            그리고 귀여운 캐릭터로도 변신시켜 드려요
           </GuideText>
           <FunFactBox>
-            <FunFactTitle>🐛 재미있는 곤충 이야기</FunFactTitle>
+            <FunFactTitle>재미있는 곤충 이야기</FunFactTitle>
             <FunFactText>
               나비는 발로 맛을 느낄 수 있어요!<br/>
-              무당벌레의 점은 나이가 아니라 종류를 나타내요 🐞
+              무당벌레의 점은 나이가 아니라 종류를 나타내요
             </FunFactText>
           </FunFactBox>
         </LeftSection>
 
         <RightSection>
-          <UploadSectionTitle>📸 곤충 친구 사진 올리기</UploadSectionTitle>
+          <UploadSectionTitle>곤충 친구 사진 올리기</UploadSectionTitle>
           <ImageUploadArea {...getRootProps()} isDragActive={isDragActive}>
             <input {...getInputProps()} />
             {selectedFile ? (
@@ -891,11 +891,11 @@ function Upload({ serverConnected }) {
                 <UploadIcon />
                 <UploadText>
                   {isDragActive 
-                    ? '🎉 이곳에 곤충 친구를 불러오세요!' 
-                    : '📷 곤충 사진을 드래그하거나 클릭해주세요'}
+                    ? '이곳에 곤충 친구를 불러오세요!' 
+                    : '곤충 사진을 드래그하거나 클릭해주세요'}
                 </UploadText>
                 <UploadHint>
-                  🌈 나비, 무당벌레, 사슴벌레... 어떤 친구든 좋아요!
+                  나비, 무당벌레, 사슴벌레... 어떤 친구든 좋아요!
                 </UploadHint>
               </>
             )}
@@ -950,13 +950,13 @@ function Upload({ serverConnected }) {
 
           {!serverConnected && (
             <StatusText>
-              ⚠️ 서버 연결을 확인해주세요
+              서버 연결을 확인해주세요
             </StatusText>
           )}
           
           <EncouragementBox>
             <EncouragementText>
-              🌟 곤충들은 지구의 소중한 친구들이에요! 🌟
+              곤충들은 지구의 소중한 친구들이에요!
             </EncouragementText>
           </EncouragementBox>
         </RightSection>

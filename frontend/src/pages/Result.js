@@ -818,8 +818,12 @@ function Result() {
                )}
                
                <PrimaryButton onClick={() => {
-                 // 캐릭터 생성 기능 (추후 구현)
-                 alert('캐릭터 생성 기능은 준비 중입니다!');
+                 // 캐릭터 생성 페이지로 이동 (곤충 데이터 전달)
+                 navigate('/character-generation', { 
+                   state: { 
+                     insectData: displayResult 
+                   } 
+                 });
                }}>
                  <FaMagic />
                  캐릭터로 만들기

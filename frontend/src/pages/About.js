@@ -564,7 +564,7 @@ function About() {
           </FeatureCard>
           
           <FeatureCard>
-            <FeatureIcon>🎨</FeatureIcon>
+            <FeatureIcon></FeatureIcon>
             <FeatureTitle>캐릭터 생성</FeatureTitle>
             <FeatureDescription>
               곤충 특징을 반영한 귀여운 캐릭터를 만들어요
@@ -572,7 +572,7 @@ function About() {
           </FeatureCard>
           
           <FeatureCard>
-            <FeatureIcon>📱</FeatureIcon>
+            <FeatureIcon></FeatureIcon>
             <FeatureTitle>간편한 업로드</FeatureTitle>
             <FeatureDescription>
               드래그 앤 드롭으로 쉽게 사진을 올려보세요
@@ -580,7 +580,7 @@ function About() {
           </FeatureCard>
           
           <FeatureCard>
-            <FeatureIcon>💾</FeatureIcon>
+            <FeatureIcon></FeatureIcon>
             <FeatureTitle>결과 다운로드</FeatureTitle>
             <FeatureDescription>
               생성된 캐릭터 이미지를 저장할 수 있어요
