@@ -36,8 +36,10 @@ const Logo = styled(Link)`
   text-decoration: none;
   color: #8B4513;
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 400;
   margin-right: auto;
+  font-family: 'Lilita One', cursive !important;
+  letter-spacing: 0.5px;
   
   &:hover {
     color: #CD853F;
@@ -164,12 +166,13 @@ const Nav = styled.nav`
 const NavLink = styled(Link)`
   text-decoration: none;
   color: #8B4513;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 16px;
   padding: 8px 16px;
   border-radius: 8px;
   transition: all 0.3s ease;
   position: relative;
+  font-family: 'Jua', sans-serif !important;
   
   ${props => props.active && `
     color: #CD853F;
@@ -209,6 +212,7 @@ const MobileMenuButton = styled.button`
   color: #8B4513;
   cursor: pointer;
   padding: 8px;
+  font-family: 'Noto Sans KR', sans-serif !important;
   
   @media (max-width: 768px) {
     display: block;
@@ -259,27 +263,6 @@ function Header() {
 
       {/* 데스크톱 네비게이션 */}
       <Nav isOpen={mobileMenuOpen}>
-        <NavLink 
-          to="/" 
-          active={isActiveRoute('/')}
-          onClick={handleNavLinkClick}
-        >
-          홈
-        </NavLink>
-        <NavLink 
-          to="/upload" 
-          active={isActiveRoute('/upload')}
-          onClick={handleNavLinkClick}
-        >
-          이미지 업로드
-        </NavLink>
-        <NavLink 
-          to="/result" 
-          active={isActiveRoute('/result')}
-          onClick={handleNavLinkClick}
-        >
-          결과 보기
-        </NavLink>
         <NavLink 
           to="/about" 
           active={isActiveRoute('/about')}
