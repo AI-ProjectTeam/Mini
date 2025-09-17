@@ -19,6 +19,7 @@ from datetime import datetime
 # AI 모델 관련 임포트 (추후 구현)
 from services.insect_classifier import InsectClassifier
 from services.character_generator import CharacterGenerator
+from config import settings
 
 # FastAPI 앱 인스턴스 생성
 app = FastAPI(
@@ -41,7 +42,7 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # AI 모델 인스턴스 초기화
-insect_classifier = InsectClassifier()  # Gemini API 기반 분류기
+insect_classifier = InsectClassifier(api_key=settings.GEMINI_API_KEY)  # Gemini API 기반 분류기
 character_generator = CharacterGenerator()
 
 @app.get("/")

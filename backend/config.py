@@ -10,6 +10,10 @@
 
 import os
 from typing import List
+from dotenv import load_dotenv
+
+# .env 파일에서 환경변수 로드
+load_dotenv()
 
 class Settings:
     """애플리케이션 설정 클래스"""
@@ -44,6 +48,9 @@ class Settings:
     API_TITLE: str = "곤충 분류 및 캐릭터 변환 API"
     API_DESCRIPTION: str = "곤충 사진을 업로드하여 종류를 분류하고 귀여운 캐릭터로 변환하는 서비스"
     API_VERSION: str = "1.0.0"
+    
+    # Google Gemini API 설정
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY")
     
     def __init__(self):
         """설정 초기화 및 디렉토리 생성"""
