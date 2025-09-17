@@ -411,8 +411,18 @@ function Result() {
   const originalFile = location.state?.originalFile;
   const processingOption = location.state?.processingOption;
 
-  // 실제 API 응답 데이터 사용
-  const displayResult = result || {};
+  // 백엔드 API 응답 구조에 맞게 데이터 파싱
+  const apiResponse = result || {};
+  const displayResult = apiResponse.data || {};
+  const isSuccess = apiResponse.success === true;
+
+  // 디버깅용 로그
+  console.log('Result 페이지 데이터:', {
+    result,
+    apiResponse,
+    displayResult,
+    isSuccess
+  });
 
   useEffect(() => {
     // 원본 이미지 URL 생성
@@ -426,19 +436,23 @@ function Result() {
   }, [originalFile]);
 
   /**
-   * 결과가 없을 때의 화면
+   * 결과가 없거나 실패했을 때의 화면
    */
-  if (!result) {
+  if (!result || !isSuccess) {
+    const errorMessage = apiResponse.error || "처리 결과가 없습니다. 다시 이미지를 업로드해주세요.";
+    
     return (
       <ResultContainer>
         <NoResultMessage>
-          <Title style={{ fontSize: '28px' }}>결과를 찾을 수 없습니다</Title>
-          <p>처리 결과가 없습니다. 다시 이미지를 업로드해주세요.</p>
+          <Title style={{ fontSize: '28px' }}>
+            {!result ? "결과를 찾을 수 없습니다" : "분석에 실패했습니다"}
+          </Title>
+          <p>{errorMessage}</p>
           <Link to="/upload" style={{ textDecoration: 'none', marginTop: '24px', display: 'inline-block' }}>
-            <ActionButton className="primary">
+            <PrimaryButton>
               <FaUpload />
               새로 업로드하기
-            </ActionButton>
+            </PrimaryButton>
           </Link>
         </NoResultMessage>
       </ResultContainer>
@@ -472,10 +486,12 @@ function Result() {
    * 결과 공유
    */
   const handleShare = () => {
+    const insectName = displayResult.곤충_이름 || '알 수 없는 곤충';
+    
     if (navigator.share) {
       navigator.share({
-        title: '곤충 캐릭터 변환 결과',
-        text: `AI가 분석한 곤충: ${result.classification?.predicted_class || '알 수 없음'}`,
+        title: '곤충 분석 결과',
+        text: `AI가 분석한 곤충: ${insectName}`,
         url: window.location.href,
       });
     } else {
@@ -487,8 +503,13 @@ function Result() {
 
   return (
     <ResultContainer>
-      <Title>처리 결과</Title>
-      <Subtitle>AI 분석이 완료되었습니다!</Subtitle>
+      <Title>🐛 곤충 분석 결과</Title>
+      <Subtitle>
+        {displayResult.곤충_이름 ? 
+          `${displayResult.곤충_이름} 친구에 대해 알아볼까요?` : 
+          'AI가 곤충을 분석하고 있어요!'
+        }
+      </Subtitle>
 
       <ResultGrid>
         {/* 원본 이미지 */}
@@ -503,44 +524,68 @@ function Result() {
             </ImageContainer>
           )}
           
-          {/* 분류 결과 */}
-          {result.classification && (
+          {/* 분류 결과 또는 분석 중 메시지 */}
+          {isSuccess ? (
+            displayResult.곤충_이름 ? (
             <ClassificationResults>
               <MainResult>
                 <MainResultTitle>
                   <FaCheckCircle />
                   분석 결과
                 </MainResultTitle>
-                <MainResultText>{result.classification.predicted_class}</MainResultText>
+                <MainResultText>
+                  {displayResult.곤충_이름}
+                  {displayResult.곤충_이름_영문 && ` (${displayResult.곤충_이름_영문})`}
+                </MainResultText>
                 <ConfidenceBar>
-                  <ConfidenceFill confidence={result.classification.confidence} />
+                  <ConfidenceFill confidence={0.95} />
                 </ConfidenceBar>
                 <p style={{ color: '#003300', fontSize: '14px', marginTop: '8px' }}>
-                  신뢰도: {(result.classification.confidence * 100).toFixed(1)}%
+                  AI 분석 완료 ✨
                 </p>
               </MainResult>
 
-              {displayResult.곤충_이름 && (
+              {displayResult.곤충_종류 && (
                 <OtherResults>
                   <h4 style={{ color: '#003300', marginBottom: '12px' }}>
                     곤충 정보:
                   </h4>
                   <OtherResultItem>
-                    <span style={{ fontWeight: '600', minWidth: '50px' }}>이름:</span>
-                    <span style={{ textAlign: 'left' }}>{displayResult.곤충_이름}</span>
+                    <span style={{ fontWeight: '600', minWidth: '60px' }}>이름:</span>
+                    <span style={{ textAlign: 'left' }}>
+                      {displayResult.곤충_이름}
+                      {displayResult.곤충_이름_영문 && (
+                        <span style={{ color: '#666', fontSize: '12px', marginLeft: '8px' }}>
+                          ({displayResult.곤충_이름_영문})
+                        </span>
+                      )}
+                    </span>
                   </OtherResultItem>
                   <OtherResultItem>
-                    <span style={{ fontWeight: '600', minWidth: '50px' }}>종류:</span>
-                    <span style={{ fontSize: '13px', lineHeight: '1.4', textAlign: 'left' }}>{displayResult.곤충_종류}</span>
+                    <span style={{ fontWeight: '600', minWidth: '60px' }}>종류:</span>
+                    <span style={{ fontSize: '13px', lineHeight: '1.4', textAlign: 'left' }}>
+                      {displayResult.곤충_종류}
+                    </span>
                   </OtherResultItem>
                 </OtherResults>
               )}
             </ClassificationResults>
-          )}
+            ) : (
+              <ClassificationResults>
+                <MainResult>
+                  <MainResultTitle>
+                    <FaClock />
+                    분석 진행 중...
+                  </MainResultTitle>
+                  <MainResultText>곤충 친구를 분석하고 있어요! 잠시만 기다려주세요.</MainResultText>
+                </MainResult>
+              </ClassificationResults>
+            )
+          ) : null}
         </ResultCard>
 
-        {/* 생성된 캐릭터 */}
-        {result.character && (
+        {/* 곤충 상세 정보 */}
+        {isSuccess && displayResult.곤충_이름 && (
           <NotebookCard>
             <NotebookCardHeader>
               <NotebookCardBinding></NotebookCardBinding>
@@ -553,44 +598,47 @@ function Result() {
             <NotebookCardContent>
               {displayResult.특별한_모습 && (
                 <InfoSection>
-                  <InfoSectionTitle>🔍 특별한 모습</InfoSectionTitle>
+                  <InfoSectionTitle>✨ 특별한 모습</InfoSectionTitle>
                   <InfoSectionText>{displayResult.특별한_모습}</InfoSectionText>
                 </InfoSection>
               )}
               
               {displayResult.서식지 && (
                 <InfoSection>
-                  <InfoSectionTitle>🏞️ 서식지</InfoSectionTitle>
+                  <InfoSectionTitle>🏡 어디에 살까</InfoSectionTitle>
                   <InfoSectionText>{displayResult.서식지}</InfoSectionText>
                 </InfoSection>
               )}
               
               {displayResult.먹이 && (
                 <InfoSection>
-                  <InfoSectionTitle>🍽️ 먹이</InfoSectionTitle>
+                  <InfoSectionTitle>🍽️ 무엇을 먹을까</InfoSectionTitle>
                   <InfoSectionText>{displayResult.먹이}</InfoSectionText>
                 </InfoSection>
               )}
               
               {displayResult.재미있는_점 && (
                 <InfoSection>
-                  <InfoSectionTitle>✨ 재미있는 점</InfoSectionTitle>
+                  <InfoSectionTitle>🎯 재미있는 점</InfoSectionTitle>
                   <InfoSectionText>{displayResult.재미있는_점}</InfoSectionText>
                 </InfoSection>
               )}
               
               {displayResult.친구_되는_법 && (
                 <InfoSection>
-                  <InfoSectionTitle>🤝 친구되는 법</InfoSectionTitle>
+                  <InfoSectionTitle>😊 친구가 되려면</InfoSectionTitle>
                   <InfoSectionText>{displayResult.친구_되는_법}</InfoSectionText>
                 </InfoSection>
               )}
               
-              {/* 데이터가 없을 때 안내 메시지 */}
-              {!displayResult.곤충_이름 && (
+              {/* 데이터가 부족할 때 안내 메시지 */}
+              {(!displayResult.특별한_모습 && !displayResult.서식지 && !displayResult.먹이 && !displayResult.재미있는_점 && !displayResult.친구_되는_법) && (
                 <InfoSection>
-                  <InfoSectionTitle>🤔 분석 중...</InfoSectionTitle>
-                  <InfoSectionText>곤충 정보를 분석하고 있습니다. 잠시만 기다려주세요!</InfoSectionText>
+                  <InfoSectionTitle>🤔 정보 수집 중...</InfoSectionTitle>
+                  <InfoSectionText>
+                    {displayResult.곤충_이름}에 대한 더 자세한 정보를 준비하고 있어요! 
+                    곧 더 많은 재미있는 이야기를 들려드릴게요. 🌟
+                  </InfoSectionText>
                 </InfoSection>
               )}
             </NotebookCardContent>
