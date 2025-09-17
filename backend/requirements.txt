@@ -7,12 +7,11 @@ python-multipart==0.0.6
 Pillow==10.1.0
 
 # AI/ML 관련 패키지 (PyTorch)
-torch>=2.2.0
-torchvision>=0.17.0
 numpy>=1.24.3
 
 # HTTP 요청 및 CORS 처리
 httpx==0.25.2
+requests>=2.31.0
 
 # 기타 유틸리티
 python-dotenv==1.0.0

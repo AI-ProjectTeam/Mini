@@ -40,8 +40,8 @@ app.add_middleware(
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# AI 모델 인스턴스 초기화 (추후 실제 모델로 교체)
-insect_classifier = InsectClassifier()
+# AI 모델 인스턴스 초기화
+insect_classifier = InsectClassifier()  # Gemini API 기반 분류기
 character_generator = CharacterGenerator()
 
 @app.get("/")
@@ -220,6 +220,249 @@ async def process_full_pipeline(file: UploadFile = File(...)):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"전체 처리 중 오류가 발생했습니다: {str(e)}")
+
+@app.post("/set-api-key")
+async def set_api_key(api_key_data: dict):
+    """
+    Gemini API 키 설정 엔드포인트
+    
+    Args:
+        api_key_data: {"api_key": "your_gemini_api_key"}
+    
+    Returns:
+        API 키 설정 결과
+    """
+    global insect_classifier
+    
+    api_key = api_key_data.get("api_key")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="API 키가 필요합니다.")
+    
+    try:
+        # 기존 분류기에 API 키 설정
+        insect_classifier.set_api_key(api_key)
+        return {
+            "message": "Gemini API 키가 성공적으로 설정되었습니다.",
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"API 키 설정 중 오류: {str(e)}")
+
+@app.delete("/api-key")
+async def remove_api_key():
+    """
+    Gemini API 키 해제 엔드포인트
+    
+    Returns:
+        API 키 해제 결과
+    """
+    global insect_classifier
+    
+    try:
+        insect_classifier.set_api_key(None)
+        return {
+            "message": "Gemini API 키가 성공적으로 해제되었습니다.",
+            "status": "success"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"API 키 해제 중 오류: {str(e)}")
+
+@app.post("/classify-insect-detailed")
+async def classify_insect_detailed(file: UploadFile = File(...)):
+    """
+    어린이용 상세 곤충 분류 엔드포인트
+    Gemini API를 사용하여 어린이 친화적인 상세 정보 제공
+    
+    Args:
+        file: 분류할 곤충 이미지 파일
+    
+    Returns:
+        상세한 곤충 분류 결과 (어린이용)
+    """
+    try:
+        # 파일 형식 확인
+        allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400,
+                detail="지원되지 않는 파일 형식입니다. JPG, PNG, GIF, WEBP만 가능합니다."
+            )
+        
+        # 파일 크기 제한 (10MB)
+        max_size = 10 * 1024 * 1024  # 10MB
+        file_size = 0
+        file_content = bytearray()
+        
+        # 파일 읽기
+        while True:
+            chunk = await file.read(1024)
+            if not chunk:
+                break
+            file_size += len(chunk)
+            if file_size > max_size:
+                raise HTTPException(
+                    status_code=413,
+                    detail="파일 크기가 너무 큽니다. 10MB 이하의 파일을 업로드하세요."
+                )
+            file_content.extend(chunk)
+        
+        # 이미지 유효성 검사
+        try:
+            from PIL import Image
+            import io
+            image = Image.open(io.BytesIO(file_content))
+            image.verify()
+        except Exception:
+            raise HTTPException(
+                status_code=400,
+                detail="유효하지 않은 이미지 파일입니다."
+            )
+        
+        # Gemini API를 사용한 어린이용 곤충 분류
+        if not insect_classifier.api_key:
+            raise HTTPException(
+                status_code=500,
+                detail="Gemini API 키가 설정되지 않았습니다. /set-api-key를 먼저 호출하세요."
+            )
+        
+        result = insect_classifier.classify_insect_for_kids(bytes(file_content), file.filename)
+        
+        if "success" in result and result["success"]:
+            return JSONResponse(content={
+                "success": True,
+                "data": {
+                    "classification": result["classification"],
+                    "parsed_data": result.get("parsed_data", {}),
+                    "filename": result["filename"]
+                },
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "error": result.get("error", "알 수 없는 오류가 발생했습니다."),
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"이미지 처리 중 오류가 발생했습니다: {str(e)}"
+        )
+
+@app.post("/classify-insect-simple")
+async def classify_insect_simple(file: UploadFile = File(...)):
+    """
+    간단한 곤충 분류 엔드포인트
+    파싱된 간단한 곤충 정보만 반환
+    
+    Args:
+        file: 분류할 곤충 이미지 파일
+    
+    Returns:
+        파싱된 간단한 곤충 정보
+    """
+    try:
+        # 파일 형식 확인
+        allowed_types = ["image/jpeg", "image/png", "image/gif", "image/webp"]
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400,
+                detail="지원되지 않는 파일 형식입니다. JPG, PNG, GIF, WEBP만 가능합니다."
+            )
+        
+        # 파일 크기 제한 (10MB)
+        max_size = 10 * 1024 * 1024  # 10MB
+        file_size = 0
+        file_content = bytearray()
+        
+        # 파일 읽기
+        while True:
+            chunk = await file.read(1024)
+            if not chunk:
+                break
+            file_size += len(chunk)
+            if file_size > max_size:
+                raise HTTPException(
+                    status_code=413,
+                    detail="파일 크기가 너무 큽니다. 10MB 이하의 파일을 업로드하세요."
+                )
+            file_content.extend(chunk)
+        
+        # 이미지 유효성 검사
+        try:
+            from PIL import Image
+            import io
+            image = Image.open(io.BytesIO(file_content))
+            image.verify()
+        except Exception:
+            raise HTTPException(
+                status_code=400,
+                detail="유효하지 않은 이미지 파일입니다."
+            )
+        
+        # Gemini API를 사용한 곤충 분류
+        if not insect_classifier.api_key:
+            raise HTTPException(
+                status_code=500,
+                detail="Gemini API 키가 설정되지 않았습니다. /set-api-key를 먼저 호출하세요."
+            )
+        
+        result = insect_classifier.classify_insect_for_kids(bytes(file_content), file.filename)
+        
+        if "success" in result and result["success"]:
+            return JSONResponse(content={
+                "success": True,
+                "data": result.get("parsed_data", {}),
+                "filename": result["filename"],
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "error": result.get("error", "알 수 없는 오류가 발생했습니다."),
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"이미지 처리 중 오류가 발생했습니다: {str(e)}"
+        )
+
+@app.get("/model-status")
+async def get_model_status():
+    """
+    AI 모델 상태 확인 엔드포인트
+    
+    Returns:
+        모델 상태 정보
+    """
+    try:
+        classifier_info = insect_classifier.get_model_info()
+        generator_info = character_generator.get_model_info()
+        
+        return {
+            "insect_classifier": classifier_info,
+            "character_generator": generator_info,
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"모델 상태 확인 중 오류: {str(e)}"
+        )
 
 if __name__ == "__main__":
     # 개발 서버 실행
