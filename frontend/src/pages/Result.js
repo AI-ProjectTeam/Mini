@@ -469,6 +469,8 @@ function Result() {
     const notInsectKeywords = [
       '곤충이 아니', '곤충이 아님', '곤충이 아닙니다', 
       '이건 곤충이 아니', '곤충이 아니야', '곤충이 아니에요',
+      '어? 이건 곤충이 아니야', '이건 곤충이 아니야!',
+      '곤충이 아닌', '곤충이 아니라', '곤충이 아니네',
       'not an insect', 'not a bug', 'not insect'
     ];
     return notInsectKeywords.some(keyword => 
@@ -476,10 +478,12 @@ function Result() {
     );
   };
   
-  // 곤충이 아닌지 확인
+  // 곤충이 아닌지 확인 (더 넓은 범위로 검사)
   const isNotInsectResult = isNotInsect(displayResult.곤충_이름) || 
                            isNotInsect(displayResult.곤충_종류) ||
-                           isNotInsect(apiResponse.error);
+                           isNotInsect(apiResponse.error) ||
+                           isNotInsect(apiResponse.classification) || // 전체 분류 응답 확인
+                           isNotInsect(JSON.stringify(displayResult));
 
   // 디버깅용 로그
   console.log('Result 페이지 데이터:', {
@@ -487,7 +491,13 @@ function Result() {
     apiResponse,
     displayResult,
     isSuccess,
-    isNotInsectResult
+    isNotInsectResult,
+    // 곤충이 아닌지 감지 상세 정보
+    classification_text: apiResponse.classification,
+    insect_name_check: isNotInsect(displayResult.곤충_이름),
+    insect_type_check: isNotInsect(displayResult.곤충_종류),
+    error_check: isNotInsect(apiResponse.error),
+    classification_check: isNotInsect(apiResponse.classification)
   });
 
   useEffect(() => {
@@ -640,9 +650,438 @@ function Result() {
         }
       </Subtitle>
 
-      <ResultGrid>
+      <ResultGrid style={isNotInsectResult ? { gridTemplateColumns: '1fr', justifyItems: 'center', position: 'relative' } : {}}>
+        {/* 🎨 곤충이 아닐 때만 - 박스 밖 CSS 애니메이션 효과들 추가 */}
+        {isNotInsectResult && (
+          <>
+            {/* 🌊 떠다니는 원들 애니메이션 */}
+            <div style={{
+              position: 'absolute',
+              top: '15%',
+              left: '10%',
+              width: '20px',
+              height: '20px',
+              background: 'linear-gradient(45deg, rgba(255, 193, 7, 0.4), rgba(255, 165, 0, 0.6))',
+              borderRadius: '50%',
+              animation: 'float 3s ease-in-out infinite',
+              zIndex: 1
+            }}></div>
+            
+            <div style={{
+              position: 'absolute',
+              top: '25%',
+              right: '15%',
+              width: '15px',
+              height: '15px',
+              background: 'linear-gradient(45deg, rgba(255, 140, 0, 0.5), rgba(255, 193, 7, 0.3))',
+              borderRadius: '50%',
+              animation: 'float 4s ease-in-out infinite 0.5s',
+              zIndex: 1
+            }}></div>
+            
+            <div style={{
+              position: 'absolute',
+              bottom: '20%',
+              left: '20%',
+              width: '12px',
+              height: '12px',
+              background: 'linear-gradient(45deg, rgba(255, 165, 0, 0.6), rgba(255, 140, 0, 0.4))',
+              borderRadius: '50%',
+              animation: 'float 3.5s ease-in-out infinite 1s',
+              zIndex: 1
+            }}></div>
+            
+            {/* ✨ 펄스 효과 원들 */}
+            <div style={{
+              position: 'absolute',
+              top: '40%',
+              left: '5%',
+              width: '25px',
+              height: '25px',
+              background: 'rgba(255, 193, 7, 0.2)',
+              borderRadius: '50%',
+              animation: 'pulse 2s ease-in-out infinite',
+              zIndex: 1
+            }}></div>
+            
+            <div style={{
+              position: 'absolute',
+              bottom: '35%',
+              right: '8%',
+              width: '18px',
+              height: '18px',
+              background: 'rgba(255, 140, 0, 0.3)',
+              borderRadius: '50%',
+              animation: 'pulse 2.5s ease-in-out infinite 1s',
+              zIndex: 1
+            }}></div>
+            
+            {/* 🌟 회전하는 별 모양들 */}
+            <div style={{
+              position: 'absolute',
+              top: '10%',
+              right: '25%',
+              width: '0',
+              height: '0',
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderBottom: '14px solid rgba(255, 193, 7, 0.4)',
+              animation: 'rotate 6s linear infinite, float 3s ease-in-out infinite',
+              zIndex: 1
+            }}></div>
+            
+            <div style={{
+              position: 'absolute',
+              bottom: '15%',
+              right: '30%',
+              width: '0',
+              height: '0',
+              borderLeft: '6px solid transparent',
+              borderRight: '6px solid transparent',
+              borderBottom: '10px solid rgba(255, 165, 0, 0.5)',
+              animation: 'rotate 8s linear infinite reverse, float 4s ease-in-out infinite 2s',
+              zIndex: 1
+            }}></div>
+            
+            {/* 🜻 CSS로 만든 진짜 잠자리들이 날아다니는 애니메이션 */}
+            {/* 잠자리 1 */}
+            <div style={{
+              position: 'absolute',
+              top: '20%',
+              left: '-60px',
+              animation: 'flyAcross1 8s linear infinite',
+              zIndex: 1
+            }}>
+              <div style={{
+                width: '30px',
+                height: '4px',
+                background: 'linear-gradient(90deg, #4CAF50, #2E7D32)',
+                borderRadius: '2px',
+                position: 'relative'
+              }}>
+                {/* 날개들 */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  left: '8px',
+                  width: '12px',
+                  height: '8px',
+                  background: 'rgba(135, 206, 235, 0.6)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(-20deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '2px',
+                  left: '8px',
+                  width: '12px',
+                  height: '8px',
+                  background: 'rgba(135, 206, 235, 0.6)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(20deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '8px',
+                  width: '12px',
+                  height: '8px',
+                  background: 'rgba(135, 206, 235, 0.6)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(20deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '8px',
+                  width: '12px',
+                  height: '8px',
+                  background: 'rgba(135, 206, 235, 0.6)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(-20deg)'
+                }}></div>
+              </div>
+            </div>
+            
+            {/* 잠자리 2 */}
+            <div style={{
+              position: 'absolute',
+              top: '60%',
+              right: '-60px',
+              animation: 'flyAcross2 10s linear infinite 3s',
+              zIndex: 1
+            }}>
+              <div style={{
+                width: '25px',
+                height: '3px',
+                background: 'linear-gradient(90deg, #FF9800, #F57C00)',
+                borderRadius: '2px',
+                position: 'relative'
+              }}>
+                {/* 날개들 */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  left: '6px',
+                  width: '10px',
+                  height: '7px',
+                  background: 'rgba(255, 193, 7, 0.5)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(-25deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '1px',
+                  left: '6px',
+                  width: '10px',
+                  height: '7px',
+                  background: 'rgba(255, 193, 7, 0.5)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(25deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '6px',
+                  width: '10px',
+                  height: '7px',
+                  background: 'rgba(255, 193, 7, 0.5)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(25deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '1px',
+                  right: '6px',
+                  width: '10px',
+                  height: '7px',
+                  background: 'rgba(255, 193, 7, 0.5)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(-25deg)'
+                }}></div>
+              </div>
+            </div>
+            
+            {/* 잠자리 3 */}
+            <div style={{
+              position: 'absolute',
+              top: '35%',
+              left: '-50px',
+              animation: 'flyAcross3 12s linear infinite 6s',
+              zIndex: 1
+            }}>
+              <div style={{
+                width: '20px',
+                height: '3px',
+                background: 'linear-gradient(90deg, #9C27B0, #7B1FA2)',
+                borderRadius: '2px',
+                position: 'relative'
+              }}>
+                {/* 날개들 */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  left: '5px',
+                  width: '8px',
+                  height: '6px',
+                  background: 'rgba(186, 104, 200, 0.4)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(-30deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '1px',
+                  left: '5px',
+                  width: '8px',
+                  height: '6px',
+                  background: 'rgba(186, 104, 200, 0.4)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(30deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '5px',
+                  width: '8px',
+                  height: '6px',
+                  background: 'rgba(186, 104, 200, 0.4)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(30deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '1px',
+                  right: '5px',
+                  width: '8px',
+                  height: '6px',
+                  background: 'rgba(186, 104, 200, 0.4)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(-30deg)'
+                }}></div>
+              </div>
+            </div>
+            
+            {/* 잠자리 4 */}
+            <div style={{
+              position: 'absolute',
+              bottom: '25%',
+              right: '-55px',
+              animation: 'flyAcross4 9s linear infinite 1.5s',
+              zIndex: 1
+            }}>
+              <div style={{
+                width: '28px',
+                height: '4px',
+                background: 'linear-gradient(90deg, #E91E63, #C2185B)',
+                borderRadius: '2px',
+                position: 'relative'
+              }}>
+                {/* 날개들 */}
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  left: '7px',
+                  width: '11px',
+                  height: '8px',
+                  background: 'rgba(240, 98, 146, 0.5)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(-22deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '2px',
+                  left: '7px',
+                  width: '11px',
+                  height: '8px',
+                  background: 'rgba(240, 98, 146, 0.5)',
+                  borderRadius: '50% 20%',
+                  transform: 'rotate(22deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '7px',
+                  width: '11px',
+                  height: '8px',
+                  background: 'rgba(240, 98, 146, 0.5)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(22deg)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '7px',
+                  width: '11px',
+                  height: '8px',
+                  background: 'rgba(240, 98, 146, 0.5)',
+                  borderRadius: '20% 50%',
+                  transform: 'rotate(-22deg)'
+                }}></div>
+              </div>
+            </div>
+
+            {/* 💫 키프레임 애니메이션 CSS 추가 */}
+            <style>{`
+              @keyframes float {
+                0%, 100% { transform: translateY(0px) scale(1); }
+                50% { transform: translateY(-15px) scale(1.1); }
+              }
+              
+              @keyframes pulse {
+                0%, 100% { 
+                  transform: scale(1);
+                  opacity: 0.3;
+                }
+                50% { 
+                  transform: scale(1.3);
+                  opacity: 0.6;
+                }
+              }
+              
+              @keyframes rotate {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+              
+              @keyframes fadeInOut {
+                0%, 100% { opacity: 0.2; }
+                50% { opacity: 0.7; }
+              }
+              
+              /* 🜟 잠자리 날아다니기 애니메이션들 */
+              @keyframes flyAcross1 {
+                0% { 
+                  transform: translateX(0) translateY(0) rotate(0deg);
+                  opacity: 0;
+                }
+                10% { opacity: 0.7; }
+                50% { 
+                  transform: translateX(50vw) translateY(-20px) rotate(5deg);
+                  opacity: 0.8;
+                }
+                90% { opacity: 0.7; }
+                100% { 
+                  transform: translateX(100vw) translateY(10px) rotate(-3deg);
+                  opacity: 0;
+                }
+              }
+              
+              @keyframes flyAcross2 {
+                0% { 
+                  transform: translateX(0) translateY(0) rotate(180deg);
+                  opacity: 0;
+                }
+                10% { opacity: 0.6; }
+                50% { 
+                  transform: translateX(-50vw) translateY(15px) rotate(175deg);
+                  opacity: 0.8;
+                }
+                90% { opacity: 0.6; }
+                100% { 
+                  transform: translateX(-100vw) translateY(-10px) rotate(185deg);
+                  opacity: 0;
+                }
+              }
+              
+              @keyframes flyAcross3 {
+                0% { 
+                  transform: translateX(0) translateY(0) rotate(-10deg) scale(0.8);
+                  opacity: 0;
+                }
+                15% { opacity: 0.5; }
+                50% { 
+                  transform: translateX(60vw) translateY(-30px) rotate(0deg) scale(1);
+                  opacity: 0.7;
+                }
+                85% { opacity: 0.5; }
+                100% { 
+                  transform: translateX(110vw) translateY(20px) rotate(10deg) scale(0.9);
+                  opacity: 0;
+                }
+              }
+              
+              @keyframes flyAcross4 {
+                0% { 
+                  transform: translateX(0) translateY(0) rotate(170deg);
+                  opacity: 0;
+                }
+                12% { opacity: 0.6; }
+                50% { 
+                  transform: translateX(-45vw) translateY(-25px) rotate(180deg);
+                  opacity: 0.8;
+                }
+                88% { opacity: 0.6; }
+                100% { 
+                  transform: translateX(-95vw) translateY(15px) rotate(190deg);
+                  opacity: 0;
+                }
+              }
+            `}</style>
+          </>
+        )}
+        
         {/* 원본 이미지 */}
-        <ResultCard>
+        <ResultCard style={isNotInsectResult ? { width: 'calc((100% - 32px) / 2)', maxWidth: '584px', position: 'relative', zIndex: 2 } : {}}>
           <CardTitle>
             내 친구 정보
           </CardTitle>
@@ -652,11 +1091,11 @@ function Result() {
             </ImageContainer>
           )}
           
-          {/* 새로운 친구 데려오기 버튼 - 이미지 바로 밑 */}
+          {/* 업로드 버튼 - 곤충 여부에 따라 다른 텍스트 */}
           <UploadButtonContainer>
             <SecondaryButton onClick={() => navigate('/upload')}>
               <FaUpload />
-              새로운 친구 데려오기
+              {isNotInsectResult ? '곤충 친구 데려오기' : '새로운 친구 데려오기'}
             </SecondaryButton>
           </UploadButtonContainer>
           
@@ -707,30 +1146,24 @@ function Result() {
             </ClassificationResults>
              ) : isNotInsectResult ? (
                <ClassificationResults>
-                 <MainResult style={{ background: 'rgba(255, 193, 7, 0.2)', border: '1px solid rgba(255, 193, 7, 0.4)' }}>
-                   <MainResultTitle style={{ color: '#FF8C00' }}>
+                 {/* 📝 박스 안 텍스트 가운데 정렬 */}
+                 <MainResult style={{ background: 'rgba(255, 193, 7, 0.2)', border: '1px solid rgba(255, 193, 7, 0.4)', textAlign: 'center' }}>
+                   <MainResultTitle style={{ 
+                     color: '#FF8C00', 
+                     textAlign: 'center',
+                     justifyContent: 'center',
+                     display: 'flex',
+                     alignItems: 'center'
+                   }}>
                      곤충 친구를 찾아주세요!
                    </MainResultTitle>
-                   <MainResultText>
+                   <MainResultText style={{ textAlign: 'center' }}>
                      어? 이건 곤충 친구가 아니에요!
                      <br/><br/>
-                     곤충 친구의 사진을 올려주시면<br/>
-                     더 재미있는 이야기를 들려드릴게요!
+                     위에 있는 버튼을 눌러서<br/>
+                     곤충 친구의 사진을 올려주세요!
                    </MainResultText>
                  </MainResult>
-                 
-                 <div style={{ marginTop: '20px', textAlign: 'center' }}>
-                   <SecondaryButton 
-                     onClick={() => navigate('/upload')}
-                     style={{ 
-                       background: 'linear-gradient(45deg, #FF8C00, #FFA500)',
-                       boxShadow: '0 4px 15px rgba(255, 140, 0, 0.4)'
-                     }}
-                   >
-                     <FaUpload />
-                     곤충 친구 사진 올리기
-                   </SecondaryButton>
-                 </div>
                </ClassificationResults>
              ) : (
                <ClassificationResults>
