@@ -263,6 +263,76 @@ class InsectClassifier:
         except Exception as e:
             raise Exception(f"곤충 분류 중 오류 발생: {e}")
 
+    def create_summary_for_voice(self, insect_data: Dict[str, str]) -> str:
+        """
+        곤충 정보를 음성용 요약 텍스트로 변환
+        
+        Args:
+            insect_data (Dict[str, str]): 파싱된 곤충 정보
+            
+        Returns:
+            str: 음성용 요약 텍스트
+        """
+        # 이미지를 base64로 인코딩 (더미 이미지 데이터)
+        summary_prompt = f"""다음 곤충 정보를 바탕으로 어린이들이 듣기 좋은 1분 내외의 재미있는 이야기로 요약해주세요.
+
+곤충 정보:
+- 이름: {insect_data.get('곤충_이름', '')}
+- 영문명: {insect_data.get('곤충_이름_영문', '')}
+- 종류: {insect_data.get('곤충_종류', '')}
+- 특별한 모습: {insect_data.get('특별한_모습', '')}
+- 서식지: {insect_data.get('서식지', '')}
+- 먹이: {insect_data.get('먹이', '')}
+- 재미있는 점: {insect_data.get('재미있는_점', '')}
+- 친구 되는 법: {insect_data.get('친구_되는_법', '')}
+
+요구사항:
+1. 어린이가 이해하기 쉬운 친근한 말투로 작성
+2. 1분 내외로 읽을 수 있는 길이 (약 200-300자)
+3. 곤충의 가장 흥미로운 특징 3-4가지만 선별하여 포함
+4. "안녕 친구들!" 같은 인사말로 시작
+5. 곤충에 대한 호기심을 자극하는 내용
+6. 마지막에 격려나 응원의 메시지 포함
+
+응답은 요약된 이야기만 제공해주세요."""
+
+        # API 요청 데이터 구성
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": summary_prompt
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        try:
+            # API 호출
+            response = requests.post(
+                self.base_url,
+                headers=self.headers,
+                data=json.dumps(payload)
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                
+                # 응답에서 텍스트 추출
+                if 'candidates' in result and len(result['candidates']) > 0:
+                    summary_text = result['candidates'][0]['content']['parts'][0]['text']
+                    return summary_text.strip()
+                else:
+                    return f"안녕 친구들! 오늘은 {insect_data.get('곤충_이름', '신기한 곤충')} 친구를 만나보자! 정말 흥미로운 곤충이야!"
+            else:
+                return f"안녕 친구들! 오늘은 {insect_data.get('곤충_이름', '신기한 곤충')} 친구를 만나보자!"
+                
+        except Exception as e:
+            print(f"요약 생성 중 오류: {e}")
+            return f"안녕 친구들! 오늘은 {insect_data.get('곤충_이름', '신기한 곤충')} 친구를 만나보자!"
+
     def classify_insect_for_kids(self, image_bytes: bytes, filename: str) -> Dict[str, Any]:
         """
         어린이를 위한 곤충 분류 및 설명 제공

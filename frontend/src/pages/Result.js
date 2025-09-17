@@ -22,8 +22,13 @@ import {
   FaHome,
   FaCheckCircle,
   FaClock,
-  FaPalette
+  FaPalette,
+  FaVolumeUp,
+  FaStop
 } from 'react-icons/fa';
+import { 
+  generateAIVoice 
+} from '../services/api';
 
 const ResultContainer = styled.div`
   padding: 40px 24px;
@@ -69,6 +74,7 @@ const UploadButtonContainer = styled.div`
 const CharacterButtonContainer = styled.div`
   display: flex;
   justify-content: flex-end;
+  gap: 135px;
   margin-top: auto;
   padding: 20px;
   background: #f8f9fa;
@@ -373,6 +379,25 @@ const SecondaryButton = styled(ActionButton)`
   }
 `;
 
+const VoiceButton = styled(PrimaryButton)`
+  background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+  box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.6);
+  }
+  
+  &.playing {
+    background: linear-gradient(45deg, #f44336, #d32f2f);
+    box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4);
+    
+    &:hover:not(:disabled) {
+      box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6);
+    }
+  }
+`;
+
 const StatsSection = styled.div`
   background: #ffffff;
   backdrop-filter: blur(10px);
@@ -425,6 +450,9 @@ function Result() {
   const location = useLocation();
   const navigate = useNavigate();
   const [originalImageUrl, setOriginalImageUrl] = useState(null);
+  const [isGeneratingVoice, setIsGeneratingVoice] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState(null);
 
   const result = location.state?.result;
   const originalFile = location.state?.originalFile;
@@ -472,6 +500,69 @@ function Result() {
       return () => URL.revokeObjectURL(url);
     }
   }, [originalFile]);
+
+  useEffect(() => {
+    // 컴포넌트 언마운트 시 음성 정지
+    return () => {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      }
+    };
+  }, [currentAudio]);
+
+  /**
+   * AI 음성 원버튼 핸들러 (재생/정지)
+   */
+  const handleVoiceToggle = async () => {
+    // 현재 재생 중이면 정지
+    if (isPlaying && currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      setIsPlaying(false);
+      setCurrentAudio(null);
+      return;
+    }
+
+    // 음성 생성 및 재생
+    try {
+      setIsGeneratingVoice(true);
+      
+      const response = await generateAIVoice(displayResult);
+      
+      if (response.success && response.data.success) {
+        const audioUrl = `http://localhost:8000${response.data.audio_url}`;
+        const audio = new Audio(audioUrl);
+        
+        audio.onloadstart = () => {
+          setIsPlaying(true);
+          setCurrentAudio(audio);
+        };
+        
+        audio.onended = () => {
+          setIsPlaying(false);
+          setCurrentAudio(null);
+        };
+        
+        audio.onerror = () => {
+          setIsPlaying(false);
+          setCurrentAudio(null);
+          alert('음성 재생 중 오류가 발생했습니다.');
+        };
+        
+        await audio.play();
+        
+      } else {
+        alert(response.data.error || 'AI 음성 생성에 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('AI 음성 오류:', error);
+      alert('음성 기능을 사용할 수 없습니다.');
+    } finally {
+      setIsGeneratingVoice(false);
+    }
+  };
 
   /**
    * 결과가 없거나 실패했을 때의 화면
@@ -712,8 +803,20 @@ function Result() {
                )}
              </NotebookCardContent>
              
-             {/* 캐릭터로 만들기 버튼 - 박스 하단 오른쪽 */}
+             {/* 캐릭터로 만들기 버튼 & AI 음성 버튼 - 박스 하단 오른쪽 */}
              <CharacterButtonContainer>
+               {!isGeneratingVoice && (
+                 <VoiceButton 
+                   onClick={handleVoiceToggle}
+                   disabled={isGeneratingVoice}
+                   className={isPlaying ? 'playing' : ''}
+                   title={isPlaying ? "음성 정지" : "곤충 설명 듣기"}
+                 >
+                   {isPlaying ? <FaStop /> : <FaVolumeUp />}
+                   {isPlaying ? '음성 정지' : '곤충 설명 듣기'}
+                 </VoiceButton>
+               )}
+               
                <PrimaryButton onClick={() => {
                  // 캐릭터 생성 기능 (추후 구현)
                  alert('캐릭터 생성 기능은 준비 중입니다!');

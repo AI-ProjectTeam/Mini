@@ -283,6 +283,28 @@ export const removeGeminiApiKey = async () => {
 };
 
 /**
+ * AI 음성 생성 (간소화된 버전)
+ * @param {Object} insectData - 곤충 정보 데이터
+ * @returns {Promise<Object>} 생성된 음성 파일 정보
+ */
+export const generateAIVoice = async (insectData) => {
+  try {
+    const response = await api.post('/generate-ai-voice', {
+      insect_data: insectData
+    }, {
+      timeout: 60000, // AI 음성 생성은 시간이 오래 걸릴 수 있음
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`AI 음성 생성 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
  * AI 모델 상태 확인
  * @returns {Promise<Object>} 모델 상태 정보
  */

@@ -4,6 +4,12 @@ env/
 .env
 .venv
 
+# Google Cloud 인증 키 (절대 커밋 금지!)
+*.json
+google-tts-key.json
+backend/google-tts-key.json
+**/google-tts-key.json
+
 # Python 캐시
 __pycache__/
 *.py[cod]
