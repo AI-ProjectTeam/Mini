@@ -12,6 +12,7 @@ FastAPI를 사용한 메인 애플리케이션
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 from datetime import datetime
@@ -19,6 +20,7 @@ from datetime import datetime
 # AI 모델 관련 임포트 (추후 구현)
 from services.insect_classifier import InsectClassifier
 from services.character_generator import CharacterGenerator
+from services.voice_generator import VoiceGenerator, DummyVoiceGenerator
 from config import settings
 
 # FastAPI 앱 인스턴스 생성
@@ -44,6 +46,20 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # AI 모델 인스턴스 초기화
 insect_classifier = InsectClassifier(api_key=settings.GEMINI_API_KEY)  # Gemini API 기반 분류기
 character_generator = CharacterGenerator()
+
+# 음성 생성기 초기화
+try:
+    voice_generator = VoiceGenerator()
+    if not voice_generator.is_available():
+        print("Google Cloud TTS를 사용할 수 없습니다. 더미 모드로 실행됩니다.")
+        voice_generator = DummyVoiceGenerator()
+except Exception as e:
+    print(f"음성 생성기 초기화 실패: {e}")
+    voice_generator = DummyVoiceGenerator()
+
+# 정적 파일 서빙 설정 (음성 파일용)
+if hasattr(voice_generator, 'audio_dir') and os.path.exists(voice_generator.audio_dir):
+    app.mount("/audio", StaticFiles(directory=voice_generator.audio_dir), name="audio")
 
 @app.get("/")
 async def root():
@@ -441,6 +457,74 @@ async def classify_insect_simple(file: UploadFile = File(...)):
             status_code=500,
             detail=f"이미지 처리 중 오류가 발생했습니다: {str(e)}"
         )
+
+
+@app.post("/generate-ai-voice")
+async def generate_ai_voice(request_data: dict):
+    """
+    AI 음성 생성 엔드포인트 (간소화된 버전)
+    
+    Args:
+        request_data: {"insect_data": {...}}
+    
+    Returns:
+        생성된 음성 파일 정보
+    """
+    try:
+        insect_data = request_data.get("insect_data", {})
+        
+        if not insect_data:
+            raise HTTPException(
+                status_code=400,
+                detail="곤충 데이터가 필요합니다."
+            )
+        
+        # Gemini API로 요약 생성
+        if not insect_classifier.api_key:
+            raise HTTPException(
+                status_code=500,
+                detail="Gemini API 키가 설정되지 않았습니다."
+            )
+        
+        summary_text = insect_classifier.create_summary_for_voice(insect_data)
+        
+        # Google Cloud TTS로 음성 생성
+        if not voice_generator.is_available():
+            return JSONResponse(content={
+                "success": False,
+                "error": "Google Cloud Text-to-Speech가 설정되지 않았습니다."
+            })
+        
+        # 기본 설정으로 음성 생성 (1배속, 고정 설정)
+        voice_result = await voice_generator.generate_voice(
+            text=summary_text,
+            voice_name=voice_generator.get_recommended_voice(),
+            speaking_rate=1.0,  # 1배속 고정
+            pitch=1.5,          # 어린이용 음높이 고정
+            volume_gain_db=0.0
+        )
+        
+        if voice_result["success"]:
+            return JSONResponse(content={
+                "success": True,
+                "summary": summary_text,
+                "audio_url": voice_result["audio_url"],
+                "timestamp": datetime.now().isoformat()
+            })
+        else:
+            return JSONResponse(content={
+                "success": False,
+                "error": voice_result["error"]
+            })
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI 음성 생성 중 오류: {str(e)}"
+        )
+
 
 @app.get("/model-status")
 async def get_model_status():
