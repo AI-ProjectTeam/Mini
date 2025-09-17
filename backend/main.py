@@ -165,7 +165,7 @@ async def classify_insect(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"곤충 분류 중 오류가 발생했습니다: {str(e)}")
 
 @app.post("/generate-character")
-async def generate_character(file: UploadFile = File(...)):
+async def generate_character(keyword:str):
     """
     캐릭터 생성 엔드포인트
     곤충 이미지를 귀여운 캐릭터로 변환
@@ -177,22 +177,12 @@ async def generate_character(file: UploadFile = File(...)):
         생성된 캐릭터 이미지 정보
     """
     try:
-        # 이미지 저장
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"character_{timestamp}_{file.filename}"
-        file_path = os.path.join(UPLOAD_DIR, filename)
-        
-        with open(file_path, "wb") as buffer:
-            content = await file.read()
-            buffer.write(content)
-        
         # AI 모델로 캐릭터 생성 (현재는 더미 데이터)
-        character_result = await character_generator.generate(file_path)
-        
+        character_result = await character_generator.generate(keyword)
+
         return {
             "message": "캐릭터 생성이 완료되었습니다.",
-            "character": character_result,
-            "original_image": file_path,
+            "image_path": character_result,
             "timestamp": datetime.now().isoformat()
         }
         
