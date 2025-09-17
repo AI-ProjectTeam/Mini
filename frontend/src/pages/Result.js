@@ -52,11 +52,27 @@ const ResultGrid = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 32px;
   margin-bottom: 40px;
+  position: relative;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 24px;
   }
+`;
+
+const UploadButtonContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+`;
+
+const CharacterButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
 `;
 
 const ResultCard = styled.div`
@@ -75,6 +91,8 @@ const NotebookCard = styled.div`
   overflow: hidden;
   position: relative;
   text-align: center;
+  display: flex;
+  flex-direction: column;
 `;
 
 const NotebookCardHeader = styled.div`
@@ -127,6 +145,7 @@ const NotebookCardContent = styled.div`
     #f0f0f0 20px
   );
   min-height: 200px;
+  flex: 1;
 `;
 
 const InfoSection = styled.div`
@@ -189,7 +208,7 @@ const CardTitle = styled.h2`
 
 const ImageContainer = styled.div`
   width: 100%;
-  height: 200px;
+  height: 300px;
   margin: 0 auto 24px;
   border-radius: 16px;
   overflow: hidden;
@@ -415,13 +434,32 @@ function Result() {
   const apiResponse = result || {};
   const displayResult = apiResponse.data || {};
   const isSuccess = apiResponse.success === true;
+  
+  // 곤충이 아닌지 확인하는 함수
+  const isNotInsect = (text) => {
+    if (!text) return false;
+    const notInsectKeywords = [
+      '곤충이 아니', '곤충이 아님', '곤충이 아닙니다', 
+      '이건 곤충이 아니', '곤충이 아니야', '곤충이 아니에요',
+      'not an insect', 'not a bug', 'not insect'
+    ];
+    return notInsectKeywords.some(keyword => 
+      text.toLowerCase().includes(keyword.toLowerCase())
+    );
+  };
+  
+  // 곤충이 아닌지 확인
+  const isNotInsectResult = isNotInsect(displayResult.곤충_이름) || 
+                           isNotInsect(displayResult.곤충_종류) ||
+                           isNotInsect(apiResponse.error);
 
   // 디버깅용 로그
   console.log('Result 페이지 데이터:', {
     result,
     apiResponse,
     displayResult,
-    isSuccess
+    isSuccess,
+    isNotInsectResult
   });
 
   useEffect(() => {
@@ -503,7 +541,7 @@ function Result() {
 
   return (
     <ResultContainer>
-      <Title>🐛 곤충 분석 결과</Title>
+      <Title>곤충 분석 결과</Title>
       <Subtitle>
         {displayResult.곤충_이름 ? 
           `${displayResult.곤충_이름} 친구에 대해 알아볼까요?` : 
@@ -515,7 +553,6 @@ function Result() {
         {/* 원본 이미지 */}
         <ResultCard>
           <CardTitle>
-            <FaBug />
             내 친구 정보
           </CardTitle>
           {originalImageUrl && (
@@ -524,15 +561,22 @@ function Result() {
             </ImageContainer>
           )}
           
+          {/* 새로운 친구 데려오기 버튼 - 이미지 바로 밑 */}
+          <UploadButtonContainer>
+            <SecondaryButton onClick={() => navigate('/upload')}>
+              <FaUpload />
+              새로운 친구 데려오기
+            </SecondaryButton>
+          </UploadButtonContainer>
+          
           {/* 분류 결과 또는 분석 중 메시지 */}
           {isSuccess ? (
             displayResult.곤충_이름 ? (
             <ClassificationResults>
               <MainResult>
-                <MainResultTitle>
-                  <FaCheckCircle />
-                  분석 결과
-                </MainResultTitle>
+                 <MainResultTitle>
+                   분석 결과
+                 </MainResultTitle>
                 <MainResultText>
                   {displayResult.곤충_이름}
                   {displayResult.곤충_이름_영문 && ` (${displayResult.곤충_이름_영문})`}
@@ -541,7 +585,7 @@ function Result() {
                   <ConfidenceFill confidence={0.95} />
                 </ConfidenceBar>
                 <p style={{ color: '#003300', fontSize: '14px', marginTop: '8px' }}>
-                  AI 분석 완료 ✨
+                  AI 분석 완료
                 </p>
               </MainResult>
 
@@ -570,96 +614,120 @@ function Result() {
                 </OtherResults>
               )}
             </ClassificationResults>
-            ) : (
-              <ClassificationResults>
-                <MainResult>
-                  <MainResultTitle>
-                    <FaClock />
-                    분석 진행 중...
-                  </MainResultTitle>
-                  <MainResultText>곤충 친구를 분석하고 있어요! 잠시만 기다려주세요.</MainResultText>
-                </MainResult>
-              </ClassificationResults>
-            )
+             ) : isNotInsectResult ? (
+               <ClassificationResults>
+                 <MainResult style={{ background: 'rgba(255, 193, 7, 0.2)', border: '1px solid rgba(255, 193, 7, 0.4)' }}>
+                   <MainResultTitle style={{ color: '#FF8C00' }}>
+                     곤충 친구를 찾아주세요!
+                   </MainResultTitle>
+                   <MainResultText>
+                     어? 이건 곤충 친구가 아니에요!
+                     <br/><br/>
+                     곤충 친구의 사진을 올려주시면<br/>
+                     더 재미있는 이야기를 들려드릴게요!
+                   </MainResultText>
+                 </MainResult>
+                 
+                 <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                   <SecondaryButton 
+                     onClick={() => navigate('/upload')}
+                     style={{ 
+                       background: 'linear-gradient(45deg, #FF8C00, #FFA500)',
+                       boxShadow: '0 4px 15px rgba(255, 140, 0, 0.4)'
+                     }}
+                   >
+                     <FaUpload />
+                     곤충 친구 사진 올리기
+                   </SecondaryButton>
+                 </div>
+               </ClassificationResults>
+             ) : (
+               <ClassificationResults>
+                 <MainResult>
+                   <MainResultTitle>
+                     분석 진행 중...
+                   </MainResultTitle>
+                   <MainResultText>곤충 친구를 분석하고 있어요! 잠시만 기다려주세요.</MainResultText>
+                 </MainResult>
+               </ClassificationResults>
+             )
           ) : null}
         </ResultCard>
 
         {/* 곤충 상세 정보 */}
         {isSuccess && displayResult.곤충_이름 && (
           <NotebookCard>
-            <NotebookCardHeader>
-              <NotebookCardBinding></NotebookCardBinding>
-              <NotebookCardTitle>
-                <FaMagic />
-                내 친구에 대해 더 알아봐요
-              </NotebookCardTitle>
-            </NotebookCardHeader>
+             <NotebookCardHeader>
+               <NotebookCardBinding></NotebookCardBinding>
+               <NotebookCardTitle>
+                 내 친구에 대해 더 알아봐요
+               </NotebookCardTitle>
+             </NotebookCardHeader>
             
             <NotebookCardContent>
-              {displayResult.특별한_모습 && (
-                <InfoSection>
-                  <InfoSectionTitle>✨ 특별한 모습</InfoSectionTitle>
-                  <InfoSectionText>{displayResult.특별한_모습}</InfoSectionText>
-                </InfoSection>
-              )}
-              
-              {displayResult.서식지 && (
-                <InfoSection>
-                  <InfoSectionTitle>🏡 어디에 살까</InfoSectionTitle>
-                  <InfoSectionText>{displayResult.서식지}</InfoSectionText>
-                </InfoSection>
-              )}
-              
-              {displayResult.먹이 && (
-                <InfoSection>
-                  <InfoSectionTitle>🍽️ 무엇을 먹을까</InfoSectionTitle>
-                  <InfoSectionText>{displayResult.먹이}</InfoSectionText>
-                </InfoSection>
-              )}
-              
-              {displayResult.재미있는_점 && (
-                <InfoSection>
-                  <InfoSectionTitle>🎯 재미있는 점</InfoSectionTitle>
-                  <InfoSectionText>{displayResult.재미있는_점}</InfoSectionText>
-                </InfoSection>
-              )}
-              
-              {displayResult.친구_되는_법 && (
-                <InfoSection>
-                  <InfoSectionTitle>😊 친구가 되려면</InfoSectionTitle>
-                  <InfoSectionText>{displayResult.친구_되는_법}</InfoSectionText>
-                </InfoSection>
-              )}
+               {displayResult.특별한_모습 && (
+                 <InfoSection>
+                   <InfoSectionTitle>특별한 모습</InfoSectionTitle>
+                   <InfoSectionText>{displayResult.특별한_모습}</InfoSectionText>
+                 </InfoSection>
+               )}
+               
+               {displayResult.서식지 && (
+                 <InfoSection>
+                   <InfoSectionTitle>어디에 살까</InfoSectionTitle>
+                   <InfoSectionText>{displayResult.서식지}</InfoSectionText>
+                 </InfoSection>
+               )}
+               
+               {displayResult.먹이 && (
+                 <InfoSection>
+                   <InfoSectionTitle>무엇을 먹을까</InfoSectionTitle>
+                   <InfoSectionText>{displayResult.먹이}</InfoSectionText>
+                 </InfoSection>
+               )}
+               
+               {displayResult.재미있는_점 && (
+                 <InfoSection>
+                   <InfoSectionTitle>재미있는 점</InfoSectionTitle>
+                   <InfoSectionText>{displayResult.재미있는_점}</InfoSectionText>
+                 </InfoSection>
+               )}
+               
+               {displayResult.친구_되는_법 && (
+                 <InfoSection>
+                   <InfoSectionTitle>친구가 되려면</InfoSectionTitle>
+                   <InfoSectionText>{displayResult.친구_되는_법}</InfoSectionText>
+                 </InfoSection>
+               )}
               
               {/* 데이터가 부족할 때 안내 메시지 */}
-              {(!displayResult.특별한_모습 && !displayResult.서식지 && !displayResult.먹이 && !displayResult.재미있는_점 && !displayResult.친구_되는_법) && (
-                <InfoSection>
-                  <InfoSectionTitle>🤔 정보 수집 중...</InfoSectionTitle>
-                  <InfoSectionText>
-                    {displayResult.곤충_이름}에 대한 더 자세한 정보를 준비하고 있어요! 
-                    곧 더 많은 재미있는 이야기를 들려드릴게요. 🌟
-                  </InfoSectionText>
-                </InfoSection>
-              )}
-            </NotebookCardContent>
-          </NotebookCard>
-        )}
+               {(!displayResult.특별한_모습 && !displayResult.서식지 && !displayResult.먹이 && !displayResult.재미있는_점 && !displayResult.친구_되는_법) && (
+                 <InfoSection>
+                   <InfoSectionTitle>정보 수집 중...</InfoSectionTitle>
+                   <InfoSectionText>
+                     {displayResult.곤충_이름}에 대한 더 자세한 정보를 준비하고 있어요! 
+                     곧 더 많은 재미있는 이야기를 들려드릴게요.
+                   </InfoSectionText>
+                 </InfoSection>
+               )}
+             </NotebookCardContent>
+             
+             {/* 캐릭터로 만들기 버튼 - 박스 하단 오른쪽 */}
+             <CharacterButtonContainer>
+               <PrimaryButton onClick={() => {
+                 // 캐릭터 생성 기능 (추후 구현)
+                 alert('캐릭터 생성 기능은 준비 중입니다!');
+               }}>
+                 <FaMagic />
+                 캐릭터로 만들기
+               </PrimaryButton>
+             </CharacterButtonContainer>
+           </NotebookCard>
+         )}
       </ResultGrid>
-
- 
 
       {/* 액션 버튼들 */}
       <ActionButtons>
-        <SecondaryButton onClick={() => navigate('/')}>
-          <FaHome />
-          홈
-        </SecondaryButton>
-        
-        <SecondaryButton onClick={() => navigate('/upload')}>
-          <FaUpload />
-          새로 업로드
-        </SecondaryButton>
-        
         {result.character?.character_image_path && (
           <PrimaryButton 
             onClick={() => handleDownload(
