@@ -41,7 +41,7 @@ const WelcomeText = styled.h1`
   color: #8B4513;
   margin: 0 0 25px 0;
   text-align: center;
-  font-family: 'Noto Sans KR', sans-serif !important;
+  font-family: 'Jua', sans-serif !important;
   position: relative;
   z-index: 10;
   

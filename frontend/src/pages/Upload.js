@@ -85,6 +85,7 @@ const GuideText = styled.p`
   margin-bottom: 35px;
   font-weight: 500;
   text-align: center;
+  font-family: 'Jua', sans-serif !important;
   
   @media (max-width: 768px) {
     font-size: 20px;
@@ -144,6 +145,7 @@ const FunFactText = styled.p`
   margin: 0;
   text-align: center;
   font-weight: 500;
+  font-family: 'Jua', sans-serif !important;
   
   @media (max-width: 768px) {
     font-size: 16px;
@@ -233,6 +235,7 @@ const UploadText = styled.p`
   text-align: center;
   font-weight: 500;
   margin-bottom: 12px;
+  font-family: 'Jua', sans-serif !important;
   
   @media (max-width: 768px) {
     font-size: 18px;
@@ -250,7 +253,8 @@ const UploadHint = styled.p`
   font-weight: 400;
   margin: 0;
   opacity: 0.8;
-  font-style: italic;
+
+  font-family: 'Jua', sans-serif !important;
   
   @media (max-width: 768px) {
     font-size: 15px;
@@ -306,7 +310,7 @@ const ActionButton = styled.button`
 `;
 
 const UploadButton = styled(ActionButton)`
-  background: linear-gradient(45deg, #CD853F, #D2691E);
+  background: linear-gradient(45deg,rgb(73, 233, 179), #33cc99);
   color: white;
   box-shadow: 0 4px 15px rgba(205, 133, 63, 0.4);
   
@@ -317,7 +321,7 @@ const UploadButton = styled(ActionButton)`
 `;
 
 const ClassifyButton = styled(ActionButton)`
-  background: linear-gradient(45deg, #228B22, #32CD32);
+  background: linear-gradient(45deg,rgb(248, 166, 103), #ff7408);
   color: white;
   box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
   
@@ -350,6 +354,7 @@ const RemoveButton = styled.button`
   justify-content: center;
   transition: all 0.3s ease;
   font-size: 12px;
+  z-index: 10;
   
   &:hover {
     background: rgba(244, 67, 54, 1);
@@ -363,6 +368,7 @@ const StatusText = styled.p`
   color: #8B4513;
   margin-top: 20px;
   font-weight: 500;
+  font-family: 'Jua', sans-serif !important;
 `;
 
 const EncouragementBox = styled.div`
@@ -454,6 +460,7 @@ const LoadingSubtext = styled.p`
   font-size: 18px;
   opacity: 0.8;
   text-align: center;
+  font-family: 'Jua', sans-serif !important;
   
   @media (max-width: 768px) {
     font-size: 16px;
@@ -892,10 +899,10 @@ function Upload({ serverConnected }) {
                 <UploadText>
                   {isDragActive 
                     ? '이곳에 곤충 친구를 불러오세요!' 
-                    : '곤충 사진을 드래그하거나 클릭해주세요'}
+                    : '알고 싶은 곤충 친구를 올려주세요!'}
                 </UploadText>
                 <UploadHint>
-                  나비, 무당벌레, 사슴벌레... 어떤 친구든 좋아요!
+                 어떤 친구든 좋아요!
                 </UploadHint>
               </>
             )}

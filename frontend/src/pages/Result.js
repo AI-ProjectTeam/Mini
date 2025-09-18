@@ -30,6 +30,17 @@ const ResultContainer = styled.div`
   padding: 40px 24px;
   max-width: 1200px;
   margin: 0 auto;
+  
+  /* Result 페이지 전체 Jua 폰트 적용 */
+  font-family: 'Jua', sans-serif !important;
+  
+  *, *::before, *::after {
+    font-family: 'Jua', sans-serif !important;
+  }
+  
+  div, span, p, a, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
+    font-family: 'Jua', sans-serif !important;
+  }
 `;
 
 const Title = styled.h1`
@@ -354,7 +365,7 @@ const ActionButton = styled.button`
 `;
 
 const PrimaryButton = styled(ActionButton)`
-  background: linear-gradient(45deg, #CD853F, #D2691E);
+  background: linear-gradient(45deg,rgb(231, 207, 74),rgb(240, 208, 29));
   color: white;
   box-shadow: 0 4px 15px rgba(205, 133, 63, 0.4);
   
@@ -365,7 +376,7 @@ const PrimaryButton = styled(ActionButton)`
 `;
 
 const SecondaryButton = styled(ActionButton)`
-  background: linear-gradient(45deg, #228B22, #32CD32);
+  background: linear-gradient(45deg,rgb(241, 151, 67),rgb(248, 129, 18));
   color: white;
   box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
   
@@ -376,7 +387,7 @@ const SecondaryButton = styled(ActionButton)`
 `;
 
 const VoiceButton = styled(PrimaryButton)`
-  background: linear-gradient(45deg, #9C27B0, #7B1FA2);
+  background: linear-gradient(45deg,rgb(231, 168, 74),rgb(238, 159, 41));
   box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
   
   &:hover:not(:disabled) {
@@ -478,10 +489,11 @@ function Result() {
                            isNotInsect(displayResult.곤충_종류) ||
                            isNotInsect(apiResponse.error) ||
                            isNotInsect(apiResponse.classification) || // 전체 분류 응답 확인
-                           isNotInsect(JSON.stringify(displayResult));
+                           isNotInsect(JSON.stringify(displayResult)) ||
+                           true; // 🔧 임시 테스트용: 항상 애니메이션 표시
 
   // 디버깅용 로그
-  console.log('Result 페이지 데이터:', {
+  console.log('🐛 Result 페이지 데이터:', {
     result,
     apiResponse,
     displayResult,
@@ -493,6 +505,15 @@ function Result() {
     insect_type_check: isNotInsect(displayResult.곤충_종류),
     error_check: isNotInsect(apiResponse.error),
     classification_check: isNotInsect(apiResponse.classification)
+  });
+
+  // 🎨 애니메이션 렌더링 상태 로그
+  console.log('🎭 애니메이션 렌더링 상태:', {
+    isNotInsectResult,
+    '애니메이션_표시_예정': isNotInsectResult ? '✅ YES' : '❌ NO',
+    '곤충_이름': displayResult.곤충_이름,
+    '곤충_종류': displayResult.곤충_종류,
+    'API_에러': apiResponse.error
   });
 
   useEffect(() => {
@@ -993,103 +1014,6 @@ function Result() {
               </div>
             </div>
 
-            {/* 💫 키프레임 애니메이션 CSS 추가 */}
-            <style>{`
-              @keyframes float {
-                0%, 100% { transform: translateY(0px) scale(1); }
-                50% { transform: translateY(-15px) scale(1.1); }
-              }
-              
-              @keyframes pulse {
-                0%, 100% { 
-                  transform: scale(1);
-                  opacity: 0.3;
-                }
-                50% { 
-                  transform: scale(1.3);
-                  opacity: 0.6;
-                }
-              }
-              
-              @keyframes rotate {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-              
-              @keyframes fadeInOut {
-                0%, 100% { opacity: 0.2; }
-                50% { opacity: 0.7; }
-              }
-              
-              /* 🜟 잠자리 날아다니기 애니메이션들 */
-              @keyframes flyAcross1 {
-                0% { 
-                  transform: translateX(0) translateY(0) rotate(0deg);
-                  opacity: 0;
-                }
-                10% { opacity: 0.7; }
-                50% { 
-                  transform: translateX(50vw) translateY(-20px) rotate(5deg);
-                  opacity: 0.8;
-                }
-                90% { opacity: 0.7; }
-                100% { 
-                  transform: translateX(100vw) translateY(10px) rotate(-3deg);
-                  opacity: 0;
-                }
-              }
-              
-              @keyframes flyAcross2 {
-                0% { 
-                  transform: translateX(0) translateY(0) rotate(180deg);
-                  opacity: 0;
-                }
-                10% { opacity: 0.6; }
-                50% { 
-                  transform: translateX(-50vw) translateY(15px) rotate(175deg);
-                  opacity: 0.8;
-                }
-                90% { opacity: 0.6; }
-                100% { 
-                  transform: translateX(-100vw) translateY(-10px) rotate(185deg);
-                  opacity: 0;
-                }
-              }
-              
-              @keyframes flyAcross3 {
-                0% { 
-                  transform: translateX(0) translateY(0) rotate(-10deg) scale(0.8);
-                  opacity: 0;
-                }
-                15% { opacity: 0.5; }
-                50% { 
-                  transform: translateX(60vw) translateY(-30px) rotate(0deg) scale(1);
-                  opacity: 0.7;
-                }
-                85% { opacity: 0.5; }
-                100% { 
-                  transform: translateX(110vw) translateY(20px) rotate(10deg) scale(0.9);
-                  opacity: 0;
-                }
-              }
-              
-              @keyframes flyAcross4 {
-                0% { 
-                  transform: translateX(0) translateY(0) rotate(170deg);
-                  opacity: 0;
-                }
-                12% { opacity: 0.6; }
-                50% { 
-                  transform: translateX(-45vw) translateY(-25px) rotate(180deg);
-                  opacity: 0.8;
-                }
-                88% { opacity: 0.6; }
-                100% { 
-                  transform: translateX(-95vw) translateY(15px) rotate(190deg);
-                  opacity: 0;
-                }
-              }
-            `}</style>
           </>
         )}
         
@@ -1161,21 +1085,21 @@ function Result() {
                <ClassificationResults>
                  {/* 📝 박스 안 텍스트 가운데 정렬 */}
                  <MainResult style={{ background: 'rgba(255, 193, 7, 0.2)', border: '1px solid rgba(255, 193, 7, 0.4)', textAlign: 'center' }}>
-                   <MainResultTitle style={{ 
-                     color: '#FF8C00', 
-                     textAlign: 'center',
-                     justifyContent: 'center',
-                     display: 'flex',
-                     alignItems: 'center'
-                   }}>
-                     곤충 친구를 찾아주세요!
-                   </MainResultTitle>
-                   <MainResultText style={{ textAlign: 'center' }}>
-                     어? 이건 곤충 친구가 아니에요!
-                     <br/><br/>
-                     위에 있는 버튼을 눌러서<br/>
-                     곤충 친구의 사진을 올려주세요!
-                   </MainResultText>
+                  <MainResultTitle style={{ 
+                    color: '#FF8C00', 
+                    textAlign: 'center',
+                    justifyContent: 'center',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    곤충 친구를 찾아주세요!
+                  </MainResultTitle>
+                  <MainResultText style={{ textAlign: 'center' }}>
+                    어? 이건 곤충 친구가 아니에요!
+                    <br/><br/>
+                    위에 있는 버튼을 눌러서<br/>
+                    곤충 친구의 사진을 올려주세요!
+                  </MainResultText>
                  </MainResult>
                </ClassificationResults>
              ) : (
@@ -1195,7 +1119,7 @@ function Result() {
         {isSuccess && displayResult.곤충_이름 && (
           <NotebookCard>
              <NotebookCardHeader>
-               <NotebookCardBinding></NotebookCardBinding>
+             
                <NotebookCardTitle>
                  내 친구에 대해 더 알아봐요
                </NotebookCardTitle>
