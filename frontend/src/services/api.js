@@ -1,3 +1,4 @@
+
 /**
  * API 통신 서비스
  * 백엔드 FastAPI 서버와의 모든 HTTP 통신을 담당
@@ -352,6 +353,30 @@ export const validateImageFile = (file) => {
 };
 
 /**
+ * AI 캐릭터 이미지 생성 (곤충 정보 기반)
+ * @param {Object} insectData - 곤충 정보 데이터
+ * @returns {Promise<Object>} 생성된 캐릭터 이미지 정보
+ */
+export const generateCharacterFromInsect = async (insectData) => {
+  try {
+    // 곤충 이름에서 키워드 추출
+    const keyword = insectData.곤충_이름 || insectData.곤충_종류 || '곤충';
+    
+    const response = await api.post('/generate-character', null, {
+      params: { keyword: keyword },
+      timeout: 12000000, // AI 이미지 생성은 시간이 오래 걸릴 수 있음 (2분)
+    });
+
+    return {
+      success: true,
+      data: response.data
+    };
+  } catch (error) {
+    throw new Error(`캐릭터 이미지 생성 실패: ${error.response?.data?.detail || error.message}`);
+  }
+};
+
+/**
  * AI 캐릭터 이미지 생성
  * @param {Object} characterData - 캐릭터 생성 데이터
  * @returns {Promise<Object>} 생성된 캐릭터 이미지 정보
@@ -359,7 +384,7 @@ export const validateImageFile = (file) => {
 export const generateCharacterImage = async (characterData) => {
   try {
     const response = await api.post('/generate-character-image', characterData, {
-      timeout: 120000, // AI 이미지 생성은 시간이 오래 걸릴 수 있음 (2분)
+      timeout: 12000000, // AI 이미지 생성은 시간이 오래 걸릴 수 있음 (2분)
     });
 
     return {

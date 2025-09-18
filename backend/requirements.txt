@@ -20,3 +20,5 @@ python-dotenv==1.0.0
 
 # Google Cloud Text-to-Speech (선택사항)
 google-cloud-texttospeech>=2.14.0
+
+accelerate

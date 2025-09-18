@@ -1,3 +1,4 @@
+
 """
 곤충 분류 및 캐릭터 변환 API 서버
 FastAPI를 사용한 메인 애플리케이션
@@ -60,6 +61,11 @@ except Exception as e:
 # 정적 파일 서빙 설정 (음성 파일용)
 if hasattr(voice_generator, 'audio_dir') and os.path.exists(voice_generator.audio_dir):
     app.mount("/audio", StaticFiles(directory=voice_generator.audio_dir), name="audio")
+
+# 생성된 캐릭터 이미지 정적 파일 서빙 설정
+output_image_dir = "out_put_image"
+os.makedirs(output_image_dir, exist_ok=True)
+app.mount("/generated-images", StaticFiles(directory=output_image_dir), name="generated-images")
 
 @app.get("/")
 async def root():
@@ -165,24 +171,25 @@ async def classify_insect(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"곤충 분류 중 오류가 발생했습니다: {str(e)}")
 
 @app.post("/generate-character")
-async def generate_character(keyword:str):
+async def generate_character(keyword: str):
     """
     캐릭터 생성 엔드포인트
-    곤충 이미지를 귀여운 캐릭터로 변환
+    곤충 키워드를 기반으로 귀여운 캐릭터 이미지 생성
     
     Args:
-        file: 캐릭터로 변환할 곤충 이미지 파일
+        keyword: 캐릭터 생성에 사용할 곤충 키워드
     
     Returns:
         생성된 캐릭터 이미지 정보
     """
     try:
-        # AI 모델로 캐릭터 생성 (현재는 더미 데이터)
-        character_result = await character_generator.generate(keyword)
+        # AI 모델로 캐릭터 생성
+        character_filename = await character_generator.generate(keyword)
 
         return {
             "message": "캐릭터 생성이 완료되었습니다.",
-            "image_path": character_result,
+            "image_filename": character_filename,
+            "image_url": f"/generated-images/{character_filename}",
             "timestamp": datetime.now().isoformat()
         }
         

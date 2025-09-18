@@ -1,3 +1,4 @@
+
 /**
  * 곤충 캐릭터 카드 생성 페이지 컴포넌트
  * 포켓몬 카드 스타일의 곤충 캐릭터 카드를 생성하는 페이지
@@ -20,6 +21,7 @@ import {
   FaLeaf,
   FaHeart
 } from 'react-icons/fa';
+import { generateCharacterFromInsect } from '../services/api';
 
 const CharacterContainer = styled.div`
   min-height: 100vh;
@@ -268,7 +270,7 @@ const MainContent = styled.div`
 
 const LoadingCard = styled.div`
   width: 350px;
-  height: 500px;
+  height: 520px;  /* 500px에서 520px로 증가 */
   background: linear-gradient(145deg, #ffffff 0%, #f0f4f8 100%);
   border-radius: 20px;
   border: 8px solid #FFD700;
@@ -295,13 +297,13 @@ const LoadingCard = styled.div`
   
   @media (max-width: 480px) {
     width: 300px;
-    height: 430px;
+    height: 450px;  /* 430px에서 450px로 증가 */
   }
 `;
 
 const PokemonCard = styled.div`
   width: 350px;
-  height: 500px;
+  height: 520px;  /* 500px에서 520px로 증가 */
   background: linear-gradient(145deg, #ffffff 0%, #f0f4f8 100%);
   border-radius: 20px;
   border: 8px solid #FFD700;
@@ -325,7 +327,7 @@ const PokemonCard = styled.div`
   
   @media (max-width: 480px) {
     width: 300px;
-    height: 430px;
+    height: 450px;  /* 430px에서 450px로 증가 */
   }
 `;
 
@@ -362,7 +364,7 @@ const TypeBadge = styled.div`
 `;
 
 const CardImageSection = styled.div`
-  height: 200px;
+  height: 180px;  /* 200px에서 220px로 증가 */
   margin: 15px 20px;
   background: radial-gradient(circle, #E3F2FD 0%, #BBDEFB 100%);
   border-radius: 15px;
@@ -374,7 +376,7 @@ const CardImageSection = styled.div`
   overflow: hidden;
   
   @media (max-width: 480px) {
-    height: 160px;
+    height: 160px;  /* 160px에서 180px로 증가 */
     margin: 15px 15px;
   }
 `;
@@ -382,7 +384,7 @@ const CardImageSection = styled.div`
 const CharacterImage = styled.img`
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover;  /* cover에서 contain으로 변경하여 이미지가 잘리지 않도록 */
   border-radius: 12px;
 `;
 
@@ -677,11 +679,15 @@ function CharacterGeneration() {
   };
   
   // 상태 관리
-  const [isGenerating, setIsGenerating] = useState(true); // 페이지 진입시 바로 생성 시작
+  const [, setIsGenerating] = useState(true); // 페이지 진입시 바로 생성 시작
   const [generatedImage, setGeneratedImage] = useState(null);
   const [generationStatus, setGenerationStatus] = useState('generating'); // generating, success, error
   const [rarityStars, setRarityStars] = useState(3); // 희귀도 별 개수 (1~5)
   const [showReleaseModal, setShowReleaseModal] = useState(false); // 놓아주기 모달 표시 여부
+
+  // 사전 생성된 이미지가 있는지 확인
+  const preGeneratedImageUrl = location.state?.generatedImageUrl;
+  const isPreGenerated = location.state?.preGenerated;
 
   // 곤충 정보가 없으면 결과 페이지로 리다이렉트
   useEffect(() => {
@@ -690,10 +696,21 @@ function CharacterGeneration() {
       return;
     }
     
-    // 페이지 진입시 자동으로 캐릭터 생성 시작
-    handleGenerate();
+    // 사전 생성된 이미지가 있으면 바로 표시, 없으면 생성 시작
+    if (isPreGenerated && preGeneratedImageUrl) {
+      setGeneratedImage(preGeneratedImageUrl);
+      setGenerationStatus('success');
+      setIsGenerating(false);
+      
+      // 랜덤 희귀도 생성
+      const randomRarity = Math.floor(Math.random() * 5) + 1;
+      setRarityStars(randomRarity);
+    } else {
+      // 페이지 진입시 자동으로 캐릭터 생성 시작
+      handleGenerate();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [insectData.곤충_이름, navigate]);
+  }, [insectData.곤충_이름, navigate, isPreGenerated, preGeneratedImageUrl]);
 
   // 캐릭터 생성 함수
   const handleGenerate = async () => {
@@ -702,7 +719,6 @@ function CharacterGeneration() {
     setGeneratedImage(null);
 
     try {
-      // 백엔드 API 호출 (현재는 더미 데이터로 대체)
       console.log('캐릭터 생성 요청:', {
         insect_name: insectData.곤충_이름_영문 || insectData.곤충_이름,
         insect_korean_name: insectData.곤충_이름,
@@ -713,17 +729,22 @@ function CharacterGeneration() {
         }
       });
       
-      // 개발 중에는 더미 이미지와 로딩 시뮬레이션
-      await new Promise(resolve => setTimeout(resolve, 3000)); // 3초 로딩
+      // 실제 백엔드 API 호출
+      const response = await generateCharacterFromInsect(insectData);
       
-      // 랜덤 희귀도 생성 (1~5개 별)
-      const randomRarity = Math.floor(Math.random() * 5) + 1;
-      setRarityStars(randomRarity);
-      
-      // 더미 이미지 URL (실제로는 백엔드에서 생성된 이미지)
-      const dummyImageUrl = `https://via.placeholder.com/300x300/87CEEB/2E5B9E?text=${encodeURIComponent(insectData.곤충_이름 || '곤충')}`;
-      setGeneratedImage(dummyImageUrl);
-      setGenerationStatus('success');
+      if (response.success) {
+        // 생성된 이미지 URL 설정
+        const imageUrl = `http://localhost:8000${response.data.image_url}`;
+        setGeneratedImage(imageUrl);
+        
+        // 랜덤 희귀도 생성 (1~5개 별)
+        const randomRarity = Math.floor(Math.random() * 5) + 1;
+        setRarityStars(randomRarity);
+        
+        setGenerationStatus('success');
+      } else {
+        throw new Error('캐릭터 생성에 실패했습니다.');
+      }
       
     } catch (error) {
       console.error('캐릭터 생성 실패:', error);

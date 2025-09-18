@@ -51,7 +51,10 @@ class CharacterGenerator:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.promtp = (
-        "gentle cute {keyword}, soft pastels, semi-realistic child-friendly; insect-like wings with subtle patterns; warm expression; simple details; plain light pastel background; no exaggerated cartoon"
+        "cute cartoon {keyword}, insect body with six legs, "
+        "colorful wings, antennae, chibi style{keyword}, kawaii{keyword}, bright cheerful colors, "
+        "children's book illustration, simple clean art style, white background, "
+        "NOT human, NOT anthropomorphic, pure insect anatomy, adorable bug character"
     )
         
         # 앱 시작 시 모델 로드
@@ -200,8 +203,8 @@ class CharacterGenerator:
                     prompt=prompt,
                     num_inference_steps=1,  # 빠른 생성을 위해 1스텝만 사용
                     guidance_scale=0.0,     # 가이던스 스케일 0으로 설정하여 빠른 생성
-                    width=512,              # 이미지 크기를 512로 제한하여 메모리 절약
-                    height=512
+                    width=640,              # 카드 비율에 맞게 가로를 더 넓게 (16:10 비율)
+                    height=400              # 카드 이미지 섹션에 맞는 높이
                 ).images[0]
 
             # 이미지 생성 완료 시간

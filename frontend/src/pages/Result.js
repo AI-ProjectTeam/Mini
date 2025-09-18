@@ -1,3 +1,5 @@
+
+
 /**
  * 결과 페이지 컴포넌트
  * AI 처리 결과를 표시하는 페이지
@@ -16,18 +18,12 @@ import styled from 'styled-components';
 import { 
   FaDownload, 
   FaUpload, 
-  FaBug, 
   FaMagic, 
-  FaShare, 
-  FaHome,
-  FaCheckCircle,
-  FaClock,
-  FaPalette,
   FaVolumeUp,
   FaStop
 } from 'react-icons/fa';
 import { 
-  generateAIVoice 
+  generateAIVoice
 } from '../services/api';
 
 const ResultContainer = styled.div`
@@ -456,7 +452,6 @@ function Result() {
 
   const result = location.state?.result;
   const originalFile = location.state?.originalFile;
-  const processingOption = location.state?.processingOption;
 
   // 백엔드 API 응답 구조에 맞게 데이터 파싱
   const apiResponse = result || {};
@@ -520,6 +515,24 @@ function Result() {
       }
     };
   }, [currentAudio]);
+
+  /**
+   * 캐릭터 생성 핸들러 - 바로 페이지 이동 후 로딩
+   */
+  const handleGenerateCharacter = () => {
+    if (!displayResult.곤충_이름) {
+      alert('곤충 정보가 없어 캐릭터를 생성할 수 없습니다.');
+      return;
+    }
+
+    // 바로 캐릭터 생성 페이지로 이동 (로딩 상태로 시작)
+    navigate('/character-generation', { 
+      state: { 
+        insectData: displayResult,
+        preGenerated: false  // 미리 생성되지 않았음을 표시
+      } 
+    });
+  };
 
   /**
    * AI 음성 원버튼 핸들러 (재생/정지)
@@ -1250,14 +1263,9 @@ function Result() {
                  </VoiceButton>
                )}
                
-               <PrimaryButton onClick={() => {
-                 // 캐릭터 생성 페이지로 이동 (곤충 데이터 전달)
-                 navigate('/character-generation', { 
-                   state: { 
-                     insectData: displayResult 
-                   } 
-                 });
-               }}>
+               <PrimaryButton 
+                 onClick={handleGenerateCharacter}
+               >
                  <FaMagic />
                  캐릭터로 만들기
                </PrimaryButton>
