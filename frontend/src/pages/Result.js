@@ -41,6 +41,53 @@ const ResultContainer = styled.div`
   div, span, p, a, h1, h2, h3, h4, h5, h6, button, input, select, textarea {
     font-family: 'Jua', sans-serif !important;
   }
+  
+  /* CSS 애니메이션 키프레임 정의 */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.6; }
+    50% { transform: scale(1.2); opacity: 1; }
+  }
+  
+  @keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  @keyframes flyAcross1 {
+    0% { left: -60px; transform: translateY(0px); }
+    25% { transform: translateY(-5px); }
+    50% { transform: translateY(5px); }
+    75% { transform: translateY(-3px); }
+    100% { left: calc(100% + 60px); transform: translateY(0px); }
+  }
+  
+  @keyframes flyAcross2 {
+    0% { right: -60px; transform: translateY(0px); }
+    25% { transform: translateY(3px); }
+    50% { transform: translateY(-7px); }
+    75% { transform: translateY(4px); }
+    100% { right: calc(100% + 60px); transform: translateY(0px); }
+  }
+  
+  @keyframes flyAcross3 {
+    0% { left: -50px; transform: translateY(0px); }
+    30% { transform: translateY(-8px); }
+    60% { transform: translateY(6px); }
+    100% { left: calc(100% + 50px); transform: translateY(0px); }
+  }
+  
+  @keyframes flyAcross4 {
+    0% { right: -55px; transform: translateY(0px); }
+    20% { transform: translateY(4px); }
+    40% { transform: translateY(-6px); }
+    70% { transform: translateY(3px); }
+    100% { right: calc(100% + 55px); transform: translateY(0px); }
+  }
 `;
 
 const Title = styled.h1`
@@ -490,7 +537,7 @@ function Result() {
                            isNotInsect(apiResponse.error) ||
                            isNotInsect(apiResponse.classification) || // 전체 분류 응답 확인
                            isNotInsect(JSON.stringify(displayResult)) ||
-                           true; // 🔧 임시 테스트용: 항상 애니메이션 표시
+                           (!displayResult.곤충_이름 && !displayResult.곤충_종류); // 곤충 정보가 없으면 곤충이 아님
 
   // 디버깅용 로그
   console.log('🐛 Result 페이지 데이터:', {
@@ -675,7 +722,338 @@ function Result() {
   };
 
   return (
-    <ResultContainer>
+    <ResultContainer style={isNotInsectResult ? { position: 'relative' } : {}}>
+      {/* 🎨 곤충이 아닐 때만 - 전체 화면 애니메이션 효과들 추가 */}
+      {isNotInsectResult && (
+        <>
+          {/* 🌊 떠다니는 원들 애니메이션 */}
+          <div style={{
+            position: 'absolute',
+            top: '15%',
+            left: '10%',
+            width: '20px',
+            height: '20px',
+            background: 'linear-gradient(45deg, rgba(255, 193, 7, 0.4), rgba(255, 165, 0, 0.6))',
+            borderRadius: '50%',
+            animation: 'float 3s ease-in-out infinite',
+            zIndex: 1
+          }}></div>
+          
+          <div style={{
+            position: 'absolute',
+            top: '25%',
+            right: '15%',
+            width: '15px',
+            height: '15px',
+            background: 'linear-gradient(45deg, rgba(255, 140, 0, 0.5), rgba(255, 193, 7, 0.3))',
+            borderRadius: '50%',
+            animation: 'float 4s ease-in-out infinite 0.5s',
+            zIndex: 1
+          }}></div>
+          
+          <div style={{
+            position: 'absolute',
+            bottom: '20%',
+            left: '20%',
+            width: '12px',
+            height: '12px',
+            background: 'linear-gradient(45deg, rgba(255, 165, 0, 0.6), rgba(255, 140, 0, 0.4))',
+            borderRadius: '50%',
+            animation: 'float 3.5s ease-in-out infinite 1s',
+            zIndex: 1
+          }}></div>
+          
+          {/* ✨ 펄스 효과 원들 */}
+          <div style={{
+            position: 'absolute',
+            top: '40%',
+            left: '5%',
+            width: '25px',
+            height: '25px',
+            background: 'rgba(255, 193, 7, 0.2)',
+            borderRadius: '50%',
+            animation: 'pulse 2s ease-in-out infinite',
+            zIndex: 1
+          }}></div>
+          
+          <div style={{
+            position: 'absolute',
+            bottom: '35%',
+            right: '8%',
+            width: '18px',
+            height: '18px',
+            background: 'rgba(255, 140, 0, 0.3)',
+            borderRadius: '50%',
+            animation: 'pulse 2.5s ease-in-out infinite 1s',
+            zIndex: 1
+          }}></div>
+          
+          {/* 🌟 회전하는 별 모양들 */}
+          <div style={{
+            position: 'absolute',
+            top: '10%',
+            right: '25%',
+            width: '0',
+            height: '0',
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderBottom: '14px solid rgba(255, 193, 7, 0.4)',
+            animation: 'rotate 6s linear infinite, float 3s ease-in-out infinite',
+            zIndex: 1
+          }}></div>
+          
+          <div style={{
+            position: 'absolute',
+            bottom: '15%',
+            right: '30%',
+            width: '0',
+            height: '0',
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderBottom: '10px solid rgba(255, 165, 0, 0.5)',
+            animation: 'rotate 8s linear infinite reverse, float 4s ease-in-out infinite 2s',
+            zIndex: 1
+          }}></div>
+          
+          {/* 🜻 CSS로 만든 진짜 잠자리들이 날아다니는 애니메이션 */}
+          {/* 잠자리 1 */}
+          <div style={{
+            position: 'absolute',
+            top: '20%',
+            left: '-60px',
+            animation: 'flyAcross1 8s linear infinite',
+            zIndex: 1
+          }}>
+            <div style={{
+              width: '30px',
+              height: '4px',
+              background: 'linear-gradient(90deg, #4CAF50, #2E7D32)',
+              borderRadius: '2px',
+              position: 'relative'
+            }}>
+              {/* 날개들 */}
+              <div style={{
+                position: 'absolute',
+                top: '-6px',
+                left: '8px',
+                width: '12px',
+                height: '8px',
+                background: 'rgba(135, 206, 235, 0.6)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(-20deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '2px',
+                left: '8px',
+                width: '12px',
+                height: '8px',
+                background: 'rgba(135, 206, 235, 0.6)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(20deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '-6px',
+                right: '8px',
+                width: '12px',
+                height: '8px',
+                background: 'rgba(135, 206, 235, 0.6)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(20deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '2px',
+                right: '8px',
+                width: '12px',
+                height: '8px',
+                background: 'rgba(135, 206, 235, 0.6)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(-20deg)'
+              }}></div>
+            </div>
+          </div>
+          
+          {/* 잠자리 2 */}
+          <div style={{
+            position: 'absolute',
+            top: '60%',
+            right: '-60px',
+            animation: 'flyAcross2 10s linear infinite 3s',
+            zIndex: 1
+          }}>
+            <div style={{
+              width: '25px',
+              height: '3px',
+              background: 'linear-gradient(90deg, #FF9800, #F57C00)',
+              borderRadius: '2px',
+              position: 'relative'
+            }}>
+              {/* 날개들 */}
+              <div style={{
+                position: 'absolute',
+                top: '-5px',
+                left: '6px',
+                width: '10px',
+                height: '7px',
+                background: 'rgba(255, 193, 7, 0.5)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(-25deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '1px',
+                left: '6px',
+                width: '10px',
+                height: '7px',
+                background: 'rgba(255, 193, 7, 0.5)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(25deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '-5px',
+                right: '6px',
+                width: '10px',
+                height: '7px',
+                background: 'rgba(255, 193, 7, 0.5)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(25deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '1px',
+                right: '6px',
+                width: '10px',
+                height: '7px',
+                background: 'rgba(255, 193, 7, 0.5)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(-25deg)'
+              }}></div>
+            </div>
+          </div>
+          
+          {/* 잠자리 3 */}
+          <div style={{
+            position: 'absolute',
+            top: '35%',
+            left: '-50px',
+            animation: 'flyAcross3 12s linear infinite 6s',
+            zIndex: 1
+          }}>
+            <div style={{
+              width: '20px',
+              height: '3px',
+              background: 'linear-gradient(90deg, #9C27B0, #7B1FA2)',
+              borderRadius: '2px',
+              position: 'relative'
+            }}>
+              {/* 날개들 */}
+              <div style={{
+                position: 'absolute',
+                top: '-4px',
+                left: '5px',
+                width: '8px',
+                height: '6px',
+                background: 'rgba(186, 104, 200, 0.4)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(-30deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '1px',
+                left: '5px',
+                width: '8px',
+                height: '6px',
+                background: 'rgba(186, 104, 200, 0.4)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(30deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '5px',
+                width: '8px',
+                height: '6px',
+                background: 'rgba(186, 104, 200, 0.4)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(30deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '1px',
+                right: '5px',
+                width: '8px',
+                height: '6px',
+                background: 'rgba(186, 104, 200, 0.4)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(-30deg)'
+              }}></div>
+            </div>
+          </div>
+          
+          {/* 잠자리 4 */}
+          <div style={{
+            position: 'absolute',
+            bottom: '25%',
+            right: '-55px',
+            animation: 'flyAcross4 9s linear infinite 1.5s',
+            zIndex: 1
+          }}>
+            <div style={{
+              width: '28px',
+              height: '4px',
+              background: 'linear-gradient(90deg, #E91E63, #C2185B)',
+              borderRadius: '2px',
+              position: 'relative'
+            }}>
+              {/* 날개들 */}
+              <div style={{
+                position: 'absolute',
+                top: '-6px',
+                left: '7px',
+                width: '11px',
+                height: '8px',
+                background: 'rgba(240, 98, 146, 0.5)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(-22deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '2px',
+                left: '7px',
+                width: '11px',
+                height: '8px',
+                background: 'rgba(240, 98, 146, 0.5)',
+                borderRadius: '50% 20%',
+                transform: 'rotate(22deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '-6px',
+                right: '7px',
+                width: '11px',
+                height: '8px',
+                background: 'rgba(240, 98, 146, 0.5)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(22deg)'
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                top: '2px',
+                right: '7px',
+                width: '11px',
+                height: '8px',
+                background: 'rgba(240, 98, 146, 0.5)',
+                borderRadius: '20% 50%',
+                transform: 'rotate(-22deg)'
+              }}></div>
+            </div>
+          </div>
+        </>
+      )}
+      
       <Title>곤충 분석 결과</Title>
       <Subtitle>
         {displayResult.곤충_이름 ? 
@@ -684,7 +1062,11 @@ function Result() {
         }
       </Subtitle>
 
-      <ResultGrid style={isNotInsectResult ? { gridTemplateColumns: '1fr', justifyItems: 'center', position: 'relative' } : {}}>
+      <ResultGrid style={isNotInsectResult ? { 
+        gridTemplateColumns: '1fr', 
+        justifyItems: 'center', 
+        position: 'relative'
+      } : {}}>
         {/* 🎨 곤충이 아닐 때만 - 박스 밖 CSS 애니메이션 효과들 추가 */}
         {isNotInsectResult && (
           <>
@@ -1018,7 +1400,13 @@ function Result() {
         )}
         
         {/* 원본 이미지 */}
-        <ResultCard style={isNotInsectResult ? { width: 'calc((100% - 32px) / 2)', maxWidth: '584px', position: 'relative', zIndex: 2 } : {}}>
+        <ResultCard style={isNotInsectResult ? { 
+          width: '100%', 
+          maxWidth: '600px', 
+          position: 'relative', 
+          zIndex: 2,
+          margin: '0 auto'
+        } : {}}>
           <CardTitle>
             내 친구 정보
           </CardTitle>
@@ -1115,8 +1503,8 @@ function Result() {
           ) : null}
         </ResultCard>
 
-        {/* 곤충 상세 정보 */}
-        {isSuccess && displayResult.곤충_이름 && (
+        {/* 곤충 상세 정보 - 곤충일 때만 표시 */}
+        {isSuccess && displayResult.곤충_이름 && !isNotInsectResult && (
           <NotebookCard>
              <NotebookCardHeader>
              
