@@ -195,6 +195,7 @@ const ImageUploadArea = styled.div`
   cursor: pointer;
   transition: all 0.3s ease;
   margin-bottom: 45px;
+  position: relative;
   
   &:hover {
     border-color: #CD853F;

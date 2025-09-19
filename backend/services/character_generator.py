@@ -201,8 +201,8 @@ class CharacterGenerator:
             with torch.no_grad():  # 그래디언트 계산 비활성화로 메모리 절약
                 image = self.pipe(
                     prompt=prompt,
-                    num_inference_steps=1,  # 빠른 생성을 위해 1스텝만 사용
-                    guidance_scale=0.0,     # 가이던스 스케일 0으로 설정하여 빠른 생성
+                    num_inference_steps=3,  # 빠른 생성을 위해 3스텝 사용
+                    guidance_scale=1.5,     # 가이던스 스케일 1.5으로 설정하여 빠른 생성
                     width=640,              # 카드 비율에 맞게 가로를 더 넓게 (16:10 비율)
                     height=400              # 카드 이미지 섹션에 맞는 높이
                 ).images[0]

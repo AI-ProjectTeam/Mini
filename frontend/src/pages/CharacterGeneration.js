@@ -341,7 +341,7 @@ const CardName = styled.h1`
   font-weight: 800;
   color: #FF6B35;
   margin: 0 0 8px 0;
-  font-family: 'Lilita One', cursive;
+  font-family: 'Jua', sans-serif;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
   
   @media (max-width: 480px) {

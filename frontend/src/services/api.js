@@ -360,7 +360,7 @@ export const validateImageFile = (file) => {
 export const generateCharacterFromInsect = async (insectData) => {
   try {
     // 곤충 이름에서 키워드 추출
-    const keyword = insectData.곤충_이름 || insectData.곤충_종류 || '곤충';
+    const keyword = insectData.곤충_이름_영문 || insectData.곤충_이름 || insectData.곤충_종류 || '곤충';
     
     const response = await api.post('/generate-character', null, {
       params: { keyword: keyword },
