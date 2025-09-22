@@ -39,24 +39,18 @@ class CharacterGenerator:
         실제 생성 모델(GAN, Diffusion 등) 로딩은 여기서 수행
         """
 
-        self.color_palettes = [
-            ["#FFD1DC", "#FFB347", "#77DD77"],
-            ["#AEC6CF", "#FF6961", "#CFCFC4"],
-            ["#FDFD96", "#84B6F4", "#FDCAE1"]
-        ]
+    #     self.prompt = (
+    #     "cute chibi {keyword} insect, kawaii character, pure insect anatomy, round body, six legs, vibrant wings, big adorable eyes, cute antennae, simple clean art, children's book illustration cartoon, white background, happy, no anthropomorphism, high quality"
+    # )
+    #     self.negative_prompt = "poorly drawn, bad anatomy, deformed, ugly, extra limbs, incorrect number of legs, mutated, merged body parts, human, anthropomorphic, text, watermark, signature, blurred, grainy, realistic, 3d, complex background, dull colors, grayscale, multiple heads, too many eyes"
+            
+        self.prompt = (
+            "cute cartoon {keyword}, insect body with six legs, "
+            "colorful wings, antennae, chibi style{keyword}, kawaii{keyword}, bright cheerful colors, "
+            "children's book illustration, simple clean art style, white background, "
+            "NOT human, NOT anthropomorphic, pure insect anatomy, adorable bug character"
+        )
 
-        self.character_styles = ["cartoon", "pastel", "chibi"]
-
-        self.model = None  # 실제 생성 모델을 여기에 로드
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        self.promtp = (
-        "cute cartoon {keyword}, insect body with six legs, "
-        "colorful wings, antennae, chibi style{keyword}, kawaii{keyword}, bright cheerful colors, "
-        "children's book illustration, simple clean art style, white background, "
-        "NOT human, NOT anthropomorphic, pure insect anatomy, adorable bug character"
-    )
-        
         # 앱 시작 시 모델 로드
         logger.info("모델 로딩 시작...")
         model_load_start_time = time.time()
@@ -90,78 +84,76 @@ class CharacterGenerator:
         except Exception as e:
             logger.error(f"모델 로딩 실패: {e}")
         
-        print(f"캐릭터 생성 모델이 {self.device}에서 초기화되었습니다.")
-    
-    def load_model(self, model_path: str):
+        # print(f"캐릭터 생성 모델이 {self.device}에서 초기화되었습니다.")
+
+        # 모델 warmup 실행으로 첫 번째 이미지 생성 속도 개선
+        self._warmup_model()
+
+    def _warmup_model(self):
         """
-        실제 훈련된 생성 모델을 로드하는 함수
-        팀원이 모델을 완성하면 이 함수를 구현
+        모델 warmup을 통한 첫 번째 이미지 생성 속도 최적화
         
-        Args:
-            model_path: 생성 모델 파일 경로
+        목적:
+        1. CUDA 커널 초기화: GPU에서 처음 연산 시 발생하는 지연을 미리 처리
+        2. 메모리 할당: 필요한 GPU 메모리를 미리 할당하고 캐싱
+        3. 가중치 최적화: 모델 가중치의 GPU 최적화를 사전에 완료
+        4. cuDNN 알고리즘 선택: 최적의 convolution 알고리즘을 미리 결정
+        
+        이 과정을 통해 실제 사용자 요청 시 대기시간을 크게 단축할 수 있습니다.
         """
-
-        # 앱 시작 시 모델 로드
-        logger.info("모델 로딩 시작...")
-        model_load_start_time = time.time()
-
+        logger.info("🔥 모델 warmup 시작 - 첫 번째 이미지 생성 속도 최적화를 위한 준비 작업")
+        warmup_start_time = time.time()
+        
         try:
-            # 실제 생성 모델 로딩 코드를 여기에 구현
-            # 예: GAN, Stable Diffusion, StyleGAN 등
-            # self.model = torch.load(model_path, map_location=self.device)
-            # self.model.eval()
-            self.pipe = AutoPipelineForText2Image.from_pretrained(
-            "stabilityai/sdxl-turbo",
-            torch_dtype=torch.float16,  # fp16으로 메모리 사용량 절반으로 줄임
-            variant="fp16",
-            use_safetensors=True,  # 안전한 텐서 형식 사용
-            low_cpu_mem_usage=True  # CPU 메모리 사용량 최적화
-            )
-
-            # GPU가 사용 가능한 경우에만 CUDA로 이동
+            # warmup용 간단한 더미 프롬프트 생성
+            # 실제 사용될 프롬프트와 유사한 구조로 구성하여 동일한 연산 경로를 거치도록 함
+            warmup_prompt = "cute butterfly, soft pastels, simple details, plain background"
+            
+            logger.info(f"더미 프롬프트로 warmup 실행: '{warmup_prompt}'")
+            
+            # GPU 메모리 사용량 모니터링 (warmup 전)
             if torch.cuda.is_available():
-                self.pipe.to("cuda")
-                # GPU 메모리 최적화 설정
-                torch.backends.cudnn.benchmark = True  # cuDNN 최적화
-                torch.backends.cuda.matmul.allow_tf32 = True  # TF32 사용으로 성능 향상
-                logger.info(f"GPU 메모리 사용량: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
-            else:
-                logger.warning("CUDA를 사용할 수 없습니다. CPU 모드로 실행됩니다.")
-
-            model_load_time = time.time() - model_load_start_time
-            logger.info(f"모델 로딩 완료! 소요시간: {model_load_time:.2f}초")
-
+                memory_before_warmup = torch.cuda.memory_allocated()
+                logger.info(f"Warmup 전 GPU 메모리: {memory_before_warmup / 1024**3:.2f} GB")
+            
+            # 실제 추론과 동일한 조건으로 더미 이미지 생성
+            # torch.no_grad()로 그래디언트 계산을 비활성화하여 메모리 절약
+            with torch.no_grad():
+                # 첫 번째 추론에서 발생하는 모든 초기화 작업을 여기서 처리
+                warmup_image = self.pipe(
+                    prompt=warmup_prompt,       # 더미 프롬프트
+                    num_inference_steps=2,      # 빠른 생성을 위해 1스텝 (실제 사용과 동일)
+                    guidance_scale=1.5,         # 가이던스 스케일 0 (실제 사용과 동일)
+                    width=640,                  # 실제 사용과 동일한 해상도
+                    height=400                  # 실제 사용과 동일한 해상도
+                ).images[0]
+            
+            # warmup에서 생성된 이미지는 메모리에서 즉시 삭제
+            # 파일로 저장하지 않고 메모리만 사용하여 디스크 I/O 최소화
+            del warmup_image
+            
+            # GPU 메모리 사용량 모니터링 (warmup 후)
+            if torch.cuda.is_available():
+                memory_after_warmup = torch.cuda.memory_allocated()
+                logger.info(f"Warmup 후 GPU 메모리: {memory_after_warmup / 1024**3:.2f} GB")
+                memory_allocated = (memory_after_warmup - memory_before_warmup) / 1024**2
+                logger.info(f"Warmup 메모리 할당량: {memory_allocated:.2f} MB")
+                
+                # GPU 메모리 캐시 정리로 불필요한 메모리 해제
+                torch.cuda.empty_cache()
+                logger.info("GPU 메모리 캐시 정리 완료")
+            
+            # warmup 완료 시간 측정 및 로깅
+            warmup_time = time.time() - warmup_start_time
+            logger.info(f"✅ 모델 warmup 완료! 소요시간: {warmup_time:.2f}초")
+            logger.info("이제 사용자 요청 시 빠른 이미지 생성이 가능합니다.")
+            
         except Exception as e:
-            logger.error(f"모델 로딩 실패: {e}")
+            # warmup 실패 시에도 서비스는 정상 동작하도록 예외 처리
+            # warmup 실패가 전체 서비스를 중단시키지 않도록 주의
+            logger.warning(f"⚠️ 모델 warmup 실패 (서비스는 정상 동작): {e}")
+            logger.info("첫 번째 이미지 생성 시 다소 지연될 수 있습니다.")
     
-    # def analyze_insect_features(self, image_path: str) -> Dict:
-    #     """
-    #     곤충 이미지에서 특징을 분석하여 캐릭터 생성에 활용
-        
-    #     Args:
-    #         image_path: 분석할 곤충 이미지 경로
-            
-    #     Returns:
-    #         분석된 특징 정보
-    #     """
-    #     try:
-    #         # 이미지 로드
-    #         image = Image.open(image_path)
-    #         width, height = image.size
-            
-    #         # 더미 특징 분석 (실제로는 AI 모델로 분석)
-    #         features = {
-    #             "dominant_colors": random.choice(self.color_palettes),
-    #             "size_category": random.choice(["작은", "중간", "큰"]),
-    #             "shape_type": random.choice(["둥근", "긴", "넓은"]),
-    #             "wing_type": random.choice(["투명한", "화려한", "단순한", "없음"]),
-    #             "texture": random.choice(["매끄러운", "털이 있는", "광택있는", "거친"])
-    #         }
-            
-    #         return features
-            
-    #     except Exception as e:
-    #         raise Exception(f"곤충 특징 분석 중 오류 발생: {e}")
     
     async def generate(self, keyword: str):
         """
@@ -186,7 +178,7 @@ class CharacterGenerator:
             logger.info(f"이미지 생성 요청: '{keyword}'")
 
             # 프롬프트 생성
-            prompt = self.promtp.format(keyword=keyword)
+            prompt = self.prompt.format(keyword=keyword)
             logger.info(f"생성된 프롬프트: {prompt[:100]}...")
 
             # GPU 메모리 사용량 로깅 (요청 전)
@@ -201,6 +193,7 @@ class CharacterGenerator:
             with torch.no_grad():  # 그래디언트 계산 비활성화로 메모리 절약
                 image = self.pipe(
                     prompt=prompt,
+                    # negative_prompt=self.negative_prompt,
                     num_inference_steps=3,  # 빠른 생성을 위해 3스텝 사용
                     guidance_scale=1.5,     # 가이던스 스케일 1.5으로 설정하여 빠른 생성
                     width=640,              # 카드 비율에 맞게 가로를 더 넓게 (16:10 비율)
@@ -264,131 +257,3 @@ class CharacterGenerator:
             # cleanup_memory()
             raise HTTPException(status_code=500, detail=f"이미지 생성 중 오류가 발생했습니다: {str(e)}")
     
-    # async def _generate_dummy_character(self, image_path: str, features: Dict, style: str) -> Dict:
-    #     """
-    #     더미 캐릭터 생성 (개발/테스트용)
-    #     실제 생성 모델 구현 후에는 제거
-    #     """
-    #     # 생성 시간 시뮬레이션
-    #     await asyncio.sleep(2)
-        
-    #     # 더미 캐릭터 이미지 생성 (간단한 도형으로 구성)
-    #     character_path = await self._create_dummy_character_image(features, style)
-        
-    #     return {
-    #         "character_image_path": character_path,
-    #         "style_applied": style,
-    #         "features_used": features,
-    #         "generation_time": "2.3초",
-    #         "model_version": "v1.0_dummy",
-    #         "character_description": self._generate_character_description(features, style),
-    #         "status": "success"
-    #     }
-    
-    # async def _create_dummy_character_image(self, features: Dict, style: str) -> str:
-    #     """
-    #     간단한 더미 캐릭터 이미지 생성
-    #     실제로는 AI 생성 모델이 처리
-    #     """
-    #     # 캐릭터 이미지 생성 (512x512 크기)
-    #     img = Image.new('RGB', (512, 512), color='white')
-    #     draw = ImageDraw.Draw(img)
-        
-    #     # 배경 색상
-    #     bg_color = features["dominant_colors"][0]
-    #     draw.rectangle([0, 0, 512, 512], fill=bg_color)
-        
-    #     # 캐릭터 몸체 (원형)
-    #     body_color = features["dominant_colors"][1]
-    #     draw.ellipse([156, 200, 356, 400], fill=body_color, outline='black', width=3)
-        
-    #     # 눈
-    #     draw.ellipse([200, 240, 230, 270], fill='white', outline='black', width=2)
-    #     draw.ellipse([282, 240, 312, 270], fill='white', outline='black', width=2)
-    #     draw.ellipse([210, 250, 220, 260], fill='black')
-    #     draw.ellipse([292, 250, 302, 260], fill='black')
-        
-    #     # 입
-    #     draw.arc([230, 280, 282, 320], start=0, end=180, fill='black', width=3)
-        
-    #     # 더듬이
-    #     draw.line([220, 200, 210, 150], fill='black', width=3)
-    #     draw.line([292, 200, 302, 150], fill='black', width=3)
-    #     draw.ellipse([205, 145, 215, 155], fill='black')
-    #     draw.ellipse([297, 145, 307, 155], fill='black')
-        
-    #     # 날개 (있는 경우)
-    #     if features["wing_type"] != "없음":
-    #         wing_color = features["dominant_colors"][2]
-    #         # 왼쪽 날개
-    #         draw.ellipse([100, 220, 180, 300], fill=wing_color, outline='black', width=2)
-    #         # 오른쪽 날개  
-    #         draw.ellipse([332, 220, 412, 300], fill=wing_color, outline='black', width=2)
-        
-    #     # 파일 저장
-    #     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    #     filename = f"character_{timestamp}.png"
-    #     character_path = os.path.join("uploads", filename)
-    #     img.save(character_path)
-        
-    #     return character_path
-    
-    # def _generate_character_description(self, features: Dict, style: str) -> str:
-    #     """
-    #     생성된 캐릭터에 대한 설명 생성
-    #     """
-    #     descriptions = [
-    #         f"{features['size_category']} 크기의 귀여운 곤충 캐릭터",
-    #         f"{features['shape_type']} 모양과 {features['wing_type']} 날개를 가진",
-    #         f"{style}로 표현된 사랑스러운 캐릭터",
-    #         f"{features['texture']} 질감의 특별한 매력을 지닌"
-    #     ]
-        
-    #     return " ".join(random.sample(descriptions, 2))
-    
-    # async def _generate_real_character(self, image_path: str, features: Dict, style: str) -> Dict:
-    #     """
-    #     실제 AI 모델을 사용한 캐릭터 생성
-    #     팀원이 실제 모델을 구현할 때 사용
-    #     """
-    #     # 실제 생성 모델 추론 코드
-    #     with torch.no_grad():
-    #         # 모델 입력 준비
-    #         # input_tensor = self.preprocess_for_generation(image_path, features, style)
-            
-    #         # 모델 추론
-    #         # generated_image = self.model(input_tensor)
-            
-    #         # 후처리 및 저장
-    #         # character_path = self.postprocess_and_save(generated_image)
-            
-    #         pass
-        
-    #     return {
-    #         "character_image_path": "실제 생성된 캐릭터 경로",
-    #         "style_applied": style,
-    #         "features_used": features,
-    #         "generation_time": "실제 생성 시간",
-    #         "model_version": "v1.0",
-    #         "character_description": self._generate_character_description(features, style),
-    #         "status": "success"
-    #     }
-    
-    # def get_available_styles(self) -> List[str]:
-    #     """
-    #     사용 가능한 캐릭터 스타일 목록 반환
-    #     """
-    #     return self.character_styles
-    
-    # def get_model_info(self) -> Dict:
-    #     """
-    #     생성 모델 정보 반환
-    #     """
-    #     return {
-    #         "model_name": "CharacterGenerator",
-    #         "available_styles": self.character_styles,
-    #         "device": str(self.device),
-    #         "color_palettes": len(self.color_palettes),
-    #         "output_size": "512x512",
-    #         "model_loaded": self.model is not None
-    #     }
