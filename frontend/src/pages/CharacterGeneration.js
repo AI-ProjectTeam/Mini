@@ -10,7 +10,7 @@
  * 4. 카드 다운로드
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { 
@@ -19,9 +19,13 @@ import {
   FaExclamationCircle,
   FaStar,
   FaLeaf,
-  FaHeart
+  FaHeart,
+  FaRedo,
+  FaPlus,
+  FaUpload
 } from 'react-icons/fa';
 import { generateCharacterFromInsect } from '../services/api';
+import html2canvas from 'html2canvas';
 
 const CharacterContainer = styled.div`
   min-height: 100vh;
@@ -479,12 +483,13 @@ const ErrorText = styled.p`
 
 const ActionButtons = styled.div`
   display: flex;
-  gap: 15px;
+  gap: 8px;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 12px;
   
   @media (max-width: 480px) {
     flex-direction: column;
+    gap: 6px;
   }
 `;
 
@@ -521,6 +526,42 @@ const DownloadButton = styled(ActionButton)`
 const ReleaseButton = styled(ActionButton)`
   background: linear-gradient(45deg, #4CAF50, #45a049);
   color: white;
+`;
+
+// 새친구 데려오기 버튼 (result 페이지와 동일한 스타일, 작은 크기)
+const NewFriendUploadButton = styled.button`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Jua', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(45deg, rgb(255, 193, 127), rgb(255, 183, 77));
+  color:rgb(83, 54, 0);
+  box-shadow: 0 4px 15px rgba(255, 193, 127, 0.4);
+  margin-bottom: 5px;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 193, 127, 0.6);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    padding: 10px 20px;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
 `;
 
 // 모달 관련 스타일 컴포넌트들
@@ -608,6 +649,148 @@ const ModalButton = styled.button`
   }
 `;
 
+// 미리보기 모달 관련 스타일 컴포넌트들
+const PreviewModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
+const PreviewModalContent = styled.div`
+  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 25px;
+  padding: 30px;
+  text-align: center;
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 3px solid #FFD700;
+  position: relative;
+  animation: slideUp 0.3s ease-out;
+  overflow: hidden;
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+`;
+
+const PreviewImage = styled.img`
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 2px solid #E6B800;
+`;
+
+const PreviewTitle = styled.h2`
+  font-size: 28px;
+  font-weight: 700;
+  color: #2E7D32;
+  margin: 0 0 20px 0;
+  font-family: 'Jua', sans-serif;
+`;
+
+const PreviewButtons = styled.div`
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 25px;
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: center;
+  }
+`;
+
+const PreviewDownloadButton = styled.button`
+  padding: 15px 30px;
+  background: linear-gradient(45deg, #CD853F, #D2691E);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'Jua', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(205, 133, 63, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(205, 133, 63, 0.6);
+  }
+`;
+
+const PreviewCloseButton = styled.button`
+  padding: 15px 30px;
+  background: linear-gradient(45deg,rgb(223, 163, 0),rgb(238, 207, 34));
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'Jua', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.4);
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(108, 117, 125, 0.6);
+  }
+`;
+
+const PreviewRegenerateButton = styled.button`
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(45deg, #FF6B35, #FF8E53);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
 const FloatingHearts = styled.div`
   position: absolute;
   top: 0;
@@ -617,6 +800,7 @@ const FloatingHearts = styled.div`
   pointer-events: none;
   overflow: hidden;
 `;
+
 
 const Heart = styled.div`
   position: absolute;
@@ -657,6 +841,7 @@ const Heart = styled.div`
 function CharacterGeneration() {
   const location = useLocation();
   const navigate = useNavigate();
+  const cardRef = useRef(null);
   
   // URL에서 곤충 정보 받기
   const rawInsectData = location.state?.insectData || {};
@@ -684,6 +869,9 @@ function CharacterGeneration() {
   const [generationStatus, setGenerationStatus] = useState('generating'); // generating, success, error
   const [rarityStars, setRarityStars] = useState(3); // 희귀도 별 개수 (1~5)
   const [showReleaseModal, setShowReleaseModal] = useState(false); // 놓아주기 모달 표시 여부
+  const [showPreviewModal, setShowPreviewModal] = useState(false); // 미리보기 모달 표시 여부
+  const [previewImageData, setPreviewImageData] = useState(null); // 미리보기 이미지 데이터
+  const [isRegenerating, setIsRegenerating] = useState(false); // 재생성 중 상태
 
   // 사전 생성된 이미지가 있는지 확인
   const preGeneratedImageUrl = location.state?.generatedImageUrl;
@@ -754,14 +942,159 @@ function CharacterGeneration() {
     }
   };
 
-  // 다운로드 함수
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = generatedImage;
-    link.download = `${insectData.곤충_이름}_캐릭터카드.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // 카드 이미지 생성 함수 (공통)
+  const generateCardImage = async () => {
+    try {
+      console.log('카드 이미지 생성 시작...');
+      
+      // 카드 요소가 있는지 확인
+      if (!cardRef.current) {
+        console.error('카드 요소를 찾을 수 없습니다');
+        return null;
+      }
+      
+      console.log('카드 요소 찾음:', cardRef.current);
+      
+      // 캐릭터 이미지가 완전히 로드될 때까지 대기
+      const characterImage = cardRef.current.querySelector('img');
+      if (characterImage) {
+        console.log('캐릭터 이미지 발견:', characterImage.src);
+        console.log('이미지 로딩 상태:', characterImage.complete);
+        
+        // 이미지가 로드되지 않았다면 대기
+        if (!characterImage.complete) {
+          console.log('이미지 로딩 대기 중...');
+          await new Promise((resolve) => {
+            characterImage.onload = () => {
+              console.log('이미지 로딩 완료!');
+              resolve();
+            };
+            characterImage.onerror = () => {
+              console.log('이미지 로딩 실패, 계속 진행');
+              resolve();
+            };
+          });
+        } else {
+          console.log('이미지 이미 로드됨');
+        }
+        
+        // 추가 대기 시간 (렌더링 완료 보장)
+        console.log('렌더링 완료 대기 중...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        console.log('캐릭터 이미지를 찾을 수 없음');
+      }
+      
+      // html2canvas로 카드 캡처 (개선된 설정)
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2, // 고해상도
+        useCORS: true, // CORS 허용
+        allowTaint: true, // 외부 이미지 허용
+        logging: true, // 로그 활성화
+        imageTimeout: 10000, // 이미지 로딩 타임아웃 10초
+        width: cardRef.current.offsetWidth,
+        height: cardRef.current.offsetHeight
+      });
+      
+      console.log('캔버스 생성됨:', canvas.width, 'x', canvas.height);
+      
+      // 이미지로 변환
+      const imageDataURL = canvas.toDataURL('image/png', 1.0);
+      
+      return imageDataURL;
+      
+    } catch (error) {
+      console.error('카드 이미지 생성 실패:', error);
+      throw error;
+    }
+  };
+
+  // 미리보기 함수
+  const handlePreview = async () => {
+    try {
+      const imageDataURL = await generateCardImage();
+      if (imageDataURL) {
+        setPreviewImageData(imageDataURL);
+        setShowPreviewModal(true);
+      }
+    } catch (error) {
+      console.error('미리보기 실패:', error);
+      alert('미리보기 실패: ' + error.message);
+    }
+  };
+
+  // 다운로드 함수 (새로 생성)
+  const handleDownload = async () => {
+    try {
+      const imageDataURL = await generateCardImage();
+      if (imageDataURL) {
+        // 다운로드
+        const link = document.createElement('a');
+        link.download = `${insectData.곤충_이름}_캐릭터카드.png`;
+        link.href = imageDataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('다운로드 완료!');
+      }
+    } catch (error) {
+      console.error('다운로드 실패:', error);
+      alert('다운로드 실패: ' + error.message);
+    }
+  };
+
+  // 모달 내부 다운로드 함수 (이미 생성된 이미지 사용)
+  const handleModalDownload = () => {
+    if (previewImageData) {
+      const link = document.createElement('a');
+      link.download = `${insectData.곤충_이름}_캐릭터카드.png`;
+      link.href = previewImageData;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log('모달에서 다운로드 완료!');
+    }
+  };
+
+  // 이미지 재생성 함수
+  const handleRegenerate = async () => {
+    try {
+      setIsRegenerating(true);
+      setShowPreviewModal(false); // 모달 닫기
+      setGenerationStatus('generating'); // 생성 화면 표시
+      setIsGenerating(true);
+      
+      console.log('이미지 재생성 시작...');
+      
+      // 백엔드에서 새로운 이미지 생성
+      const response = await generateCharacterFromInsect(insectData);
+      
+      if (response.success) {
+        // 생성된 이미지 URL 설정
+        const imageUrl = `http://localhost:8000${response.data.image_url}`;
+        setGeneratedImage(imageUrl);
+        
+        // 랜덤 희귀도 생성 (1~5개 별)
+        const randomRarity = Math.floor(Math.random() * 5) + 1;
+        setRarityStars(randomRarity);
+        
+        setGenerationStatus('success');
+        console.log('이미지 재생성 완료!');
+      } else {
+        throw new Error('캐릭터 재생성에 실패했습니다.');
+      }
+      
+    } catch (error) {
+      console.error('이미지 재생성 실패:', error);
+      setGenerationStatus('error');
+      alert('이미지 재생성 실패: ' + error.message);
+    } finally {
+      setIsRegenerating(false);
+      setIsGenerating(false);
+    }
   };
 
   // 놓아주기 함수
@@ -772,6 +1105,11 @@ function CharacterGeneration() {
   // 모달에서 홈으로 이동
   const goToHome = () => {
     navigate('/');
+  };
+
+  // 새친구 데려오기 (업로드 페이지로 이동)
+  const goToUpload = () => {
+    navigate('/upload');
   };
 
 
@@ -826,7 +1164,7 @@ function CharacterGeneration() {
 
         {/* 성공 - 포켓몬 카드 스타일 */}
         {generationStatus === 'success' && (
-          <PokemonCard>
+          <PokemonCard ref={cardRef}>
             {/* 카드 상단 - 이름과 희귀도 */}
             <RarityBadge>
               {Array.from({ length: rarityStars }, (_, index) => (
@@ -871,12 +1209,20 @@ function CharacterGeneration() {
           </PokemonCard>
         )}
 
+        {/* 새친구 데려오기 버튼 (카드 완성 후 표시) */}
+        {generationStatus === 'success' && (
+          <NewFriendUploadButton onClick={goToUpload}>
+            <FaUpload />
+            새친구 데려오기
+          </NewFriendUploadButton>
+        )}
+
         {/* 액션 버튼들 (카드 완성 후 표시) */}
         {generationStatus === 'success' && (
           <ActionButtons>
-            <DownloadButton onClick={handleDownload}>
+            <DownloadButton onClick={handlePreview}>
               <FaDownload />
-              카드 다운로드
+              간직하기
             </DownloadButton>
             <ReleaseButton onClick={handleRelease}>
               <FaHeart />
@@ -901,6 +1247,41 @@ function CharacterGeneration() {
             </ModalButton>
           </ModalContent>
         </ModalOverlay>
+      )}
+
+      {/* 미리보기 모달 */}
+      {showPreviewModal && (
+        <PreviewModalOverlay onClick={() => setShowPreviewModal(false)}>
+          <PreviewModalContent onClick={(e) => e.stopPropagation()}>
+            <PreviewTitle>{insectData.곤충_이름} 캐릭터 카드</PreviewTitle>
+            {previewImageData && (
+              <PreviewImage
+                src={previewImageData}
+                alt={`${insectData.곤충_이름} 캐릭터 카드 미리보기`}
+              />
+            )}
+            <PreviewButtons>
+              <PreviewDownloadButton onClick={handleModalDownload}>
+                <FaDownload />
+                간직하기
+              </PreviewDownloadButton>
+              <PreviewCloseButton onClick={() => setShowPreviewModal(false)}>
+                닫기
+              </PreviewCloseButton>
+              <PreviewRegenerateButton 
+                onClick={handleRegenerate}
+                disabled={isRegenerating}
+                title="새로 만들기"
+              >
+                {isRegenerating ? (
+                  <FaSpinner style={{ animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <FaRedo />
+                )}
+              </PreviewRegenerateButton>
+            </PreviewButtons>
+          </PreviewModalContent>
+        </PreviewModalOverlay>
       )}
     </CharacterContainer>
   );

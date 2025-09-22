@@ -10,9 +10,9 @@ FastAPI를 사용한 메인 애플리케이션
 4. CORS 설정으로 프론트엔드와 통신
 """
 
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
@@ -65,7 +65,28 @@ if hasattr(voice_generator, 'audio_dir') and os.path.exists(voice_generator.audi
 # 생성된 캐릭터 이미지 정적 파일 서빙 설정
 output_image_dir = "out_put_image"
 os.makedirs(output_image_dir, exist_ok=True)
-app.mount("/generated-images", StaticFiles(directory=output_image_dir), name="generated-images")
+
+# CORS 헤더가 포함된 커스텀 정적 파일 핸들러
+@app.get("/generated-images/{filename}")
+async def get_generated_image(filename: str):
+    """
+    생성된 캐릭터 이미지를 CORS 헤더와 함께 반환
+    """
+    file_path = os.path.join(output_image_dir, filename)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="이미지를 찾을 수 없습니다")
+    
+    # CORS 헤더가 포함된 FileResponse 반환
+    return FileResponse(
+        path=file_path,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET",
+            "Access-Control-Allow-Headers": "*",
+            "Cache-Control": "public, max-age=3600"
+        }
+    )
 
 @app.get("/")
 async def root():
